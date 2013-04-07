@@ -9,7 +9,6 @@ function get_username($userid) {
     $result = mysql_query("SELECT id FROM tblcustomfields WHERE fieldname='Username'");
     $grab_customfieldid = mysql_fetch_row($result);
     $username_customfieldid = $grab_customfieldid[0];
-    error_log('field: '.$username_customfieldid);
 
     // get username value
     $result = mysql_query("SELECT value FROM tblcustomfieldsvalues WHERE fieldid = ".$username_customfieldid." and relid = ".$userid);
@@ -18,12 +17,28 @@ function get_username($userid) {
     return $username;
 }
 
-/*
+/* 
+ Check if a specified username already exists.
+*/
+function exists_username($username) {
+   $result = mysql_query("SELECT id FROM tblcustomfields WHERE fieldname='Username'");
+   $grab_customfieldid = mysql_fetch_row($result);
+   $username_customfieldid = $grab_customfieldid[0];
+
+   // check if we have at least one username
+   // XXX potential sql injection place
+   $query = "SELECT count(*) FROM tblcustomfieldsvalues WHERE fieldid = ".$username_customfieldid.
+		" and value = \"".mysql_real_escape_string($username)."\"";
+   $result = mysql_query($query);
+   $r = mysql_fetch_row($result);
+   return $r[0] > 0;
+}
+
+/* 
  Execute command against OMS server.
 */
 function oms_command($command_path) {
     global $oms_hostname, $oms_user, $oms_password;
-
     // construct full url
     $curl = curl_init($oms_hostname.$command_path);
     curl_setopt($curl, CURLOPT_FAILONERROR, true);
@@ -38,14 +53,13 @@ function oms_command($command_path) {
     // add basic auth
     curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC ) ;
     curl_setopt($curl, CURLOPT_USERPWD, $oms_user . ":" . $oms_password);
-    error_log('About to execute '.$curl);
     $res = curl_exec($curl);
     if ( !$res ) {
-        error_log('Error during OMS call: '.curl_error($curl));
-        curl_close($curl);
-        return -1; // better error handling?
+	error_log('Error during OMS call: '.curl_error($curl));
+        curl_close($curl); 
+	return -1;
     }
-    curl_close($curl);
+    curl_close($curl); 
     return $res;
 }
 
