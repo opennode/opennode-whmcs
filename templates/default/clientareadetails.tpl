@@ -153,7 +153,12 @@
     <div class="control-group">
 	    <label class="control-label" for="customfield{$customfield.id}">{$customfield.name}</label>
 		<div class="controls">
-		     {if $customfield.name=='Username'}<input disabled="disabled" value={$customfield.value} />{else}{$customfield.input} {$customfield.description}{/if} 
+		     {if $customfield.name=='Username'}
+		     	<input disabled="" value={$customfield.value} />
+		     	<input name="customfield[{$customfield.id}]" id="customfield{$customfield.id}"  type="hidden" value={$customfield.value} />
+		     {else}
+		     	{$customfield.input} {$customfield.description}
+		     {/if} 
 		</div>
 	</div>
 {/foreach}
