@@ -52,7 +52,8 @@ function oms_command($command_path) {
 
     // add basic auth
     curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC ) ;
-    curl_setopt($curl, CURLOPT_USERPWD, $oms_user . ":" . $oms_password);
+    curl_setopt($curl, CURLOPT_USERPWD, $oms_user . ":" . $oms_password);	
+	curl_setopt($curl, CURLOPT_POST, 1);
     $res = curl_exec($curl);
     if ( !$res ) {
 	error_log('Error during OMS call: '.curl_error($curl));
