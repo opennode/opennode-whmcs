@@ -1,0 +1,3 @@
+{if $loggedin}
+<span>{$LANG.orderpaymenttermonetimebundlestart} {credit_time eurPerHour=21} {$LANG.orderpaymenttermonetimebundleend}</span>
+{/if}
