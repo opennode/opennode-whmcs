@@ -48,9 +48,8 @@
 <span class="title">{$product.name}</span><br />
 {assign var="OMS_BUNDLE_ID" value="4"}
 {if $product.bid}
-	{if $gid eq $OMS_BUNDLE_ID}
+    {if $gid eq $OMS_BUNDLE_ID}
        {oms_bundle_products groupId=$gid bundleId=$product.bid}
-       
        {if $product.displayprice} {$product.displayprice} {$LANG.orderpaymenttermonetimebundleperhour}{else} {$productSum} {$LANG.bundleeurperhour}  {/if} 
        
        {if $loggedin}
@@ -70,7 +69,7 @@
 {foreach from=$product.features key=feature item=value}
 <div class="{if $num % 2 == 0}a{else}b{/if}feature{cycle name=$product.pid values="1,2"}">{$value}</div>
 {foreachelse}
- {if $gid eq $OMS_BUNDLE_ID}
+    {if $gid eq $OMS_BUNDLE_ID}
         {if $product.description}
             <div class="{if $num % 2 == 0}a{else}b{/if}featuredesc{cycle name=$product.pid values="1,2"}">{$product.description}</div>
         {else}

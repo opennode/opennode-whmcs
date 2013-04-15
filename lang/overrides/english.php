@@ -1,7 +1,7 @@
 <?php
 $_LANG['orderpaymenttermonetimebundlestart'] = "Lasts for";
 $_LANG['orderpaymenttermonetimebundleend'] = " Hours";
-$_LANG['orderpaymenttermonetimebundleeurhours'] = 20;
+$_LANG['orderpaymenttermonetimebundleperhour'] = "per hour";
 $_LANG['bundleeurperhour'] = "EUR per hour";
 $_LANG['omsconsole'] = "OMS Console";
 $_LANG['console'] = "Console";
@@ -15,4 +15,5 @@ $_LANG['statsinfrprice'] = "Price of the infrastructure";
 $_LANG['mb'] = "MB";
 $_LANG['gb'] = "GB";
 $_LANG['eur'] = "EUR";
+
 ?>
