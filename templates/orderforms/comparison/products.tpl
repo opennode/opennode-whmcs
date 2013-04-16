@@ -50,6 +50,7 @@
 {if $product.bid}
     {if $gid eq $OMS_BUNDLE_ID}
        {oms_bundle_products groupId=$gid bundleId=$product.bid}
+       
        {if $product.displayprice} {$product.displayprice} {$LANG.orderpaymenttermonetimebundleperhour}{else} {$productSum} {$LANG.bundleeurperhour}  {/if} 
        
        {if $loggedin}
@@ -61,6 +62,7 @@
 {elseif $product.paytype eq "free"}
 {$LANG.orderfree}
 {elseif $product.paytype eq "onetime"}
+
 {$product.pricing.onetime} {$LANG.orderpaymenttermonetime}<br />
 {else}
 {$product.pricing.monthly}
@@ -89,6 +91,7 @@
         </div>
     {/if}
 {/foreach}
+
 <div class="{if $num % 2 == 0}a{else}b{/if}feature{cycle name=$product.pid values="1,2"}">
 <br />
 <input type="button" value="{$LANG.ordernowbutton} &raquo;"{if $product.qty eq "0"} disabled{/if} onclick="window.location='{$smarty.server.PHP_SELF}?a=add&{if $product.bid}bid={$product.bid}{else}pid={$product.pid}{/if}'" class="cartbutton" />

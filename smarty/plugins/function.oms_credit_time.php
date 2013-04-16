@@ -18,30 +18,33 @@
  * @return Integer logged in user credit amount
  */
 function smarty_function_oms_credit_time($params, &$smarty) {
-	$eurPerHour = (empty($params['eurPerHour'])) ? 20 : $params['eurPerHour'];
+
+	$eurPerHour = (empty($params['eurPerHour'])) ? 0 : $params['eurPerHour'];
+	$credit = (empty($params['credit'])) ? null : $params['credit'];
 	$digits = (empty($params['digits'])) ? 1 : $params['digits'];
-	
-	if ($_SESSION['uid']) {
-		$clientCredit = 0;
+	if ($credit) {
+		return round($credit / $eurPerHour, $digits);
+	} else {
+		if ($_SESSION['uid']) {
+			$clientCredit = 0;
 
-		$command = "getcredits";
-		$adminuser = "admin";
-		$values["clientid"] = $_SESSION['uid'];
+			$command = "getcredits";
+			$adminuser = "admin";
+			$values["clientid"] = $_SESSION['uid'];
 
-		$clientData = localAPI($command, $values, $adminuser);
+			$clientData = localAPI($command, $values, $adminuser);
 
-		if ($clientData['result'] == "success") {
-			foreach ($clientData['credits'] as $creditArr) {
-				foreach ($creditArr as $credit) {
-					$clientCredit += $credit['amount'];
+			if ($clientData['result'] == "success") {
+				foreach ($clientData['credits'] as $creditArr) {
+					foreach ($creditArr as $credit) {
+						$clientCredit += $credit['amount'];
+					}
 				}
 			}
+
+			return round($clientCredit / $eurPerHour, $digits);
 		}
-
-		return round($clientCredit / $eurPerHour,$digits);
 	}
-
 	return 0;
 }
-
 ?>
