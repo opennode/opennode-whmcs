@@ -24,7 +24,10 @@
 <div id="whmcsheader">
     <div class="whmcscontainer">
         <div id="whmcstxtlogo"><a href="index.php">{$companyname}</a></div>
-        <div id="whmcsimglogo"><a href="index.php"><img src="templates/{$template}/img/whmcslogo.png" alt="{$companyname}" /></a></div>
+        <div id="whmcsimglogo">
+            <a href="index.php"><img src="templates/{$template}/img/whmcslogo.png" alt="{$companyname}" /></a>
+            <a href="{$oms_link}" style="float: right"><img src="{$oms_img}" alt="{$LANG.omsconsole}" /></a>
+        </div>
     </div>
 </div>
 
