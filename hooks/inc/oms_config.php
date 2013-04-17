@@ -6,5 +6,5 @@ $oms_hostname = "http://localhost:10000";
 $oms_user = "opennode";
 $oms_password = "changeme";
 
-$oms_img = "images/onc_logo_login_levira_tranparent.png";
+$oms_img = "images/onc_logo_login_transparent.png";
 ?>
