@@ -8,7 +8,7 @@
 </div>
 {/if}
 
-<form method="post" action="{$systemsslurl}dologin.php" class="form-stacked" name="frmlogin">
+<form method="post" action="{$systemsslurl}dologinoms.php" class="form-stacked" name="frmlogin">
 
 <div class="logincontainer">
 
