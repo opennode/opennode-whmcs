@@ -6,31 +6,49 @@ if (!defined("WHMCS"))
 include_once (dirname(__FILE__) . '/inc/oms_utils.php');
 
 function reduce_users_credit() {
+	global $oms_usage_db;
+	if ($_SESSION[uid] != 13)
+		return;
 
 	logActivity("Starting clients credit reduction job.");
 
-	//read timestamp, write new timestamp
-	// Or write at end row as processed=true ?
-
 	//Get products prices
 	$p_core = getProductPriceByName("1 Core");
-	$p_disk = getProductPriceByName("GB Storage");
+	$p_disk = getProductPriceByName("1GB Storage");
 	$p_memory = getProductPriceByName("1GB RAM");
+	logActivity("Using product prices for calculations: Cores:" . $p_core . ". Disk:" . $p_disk . ".Memory:" . $p_memory);
 
-	$table = "CONF_CHANGES";
+	if (!$p_core || !$p_disk || !$p_memory) {
+		logActivity("Error: Product prices not set.");
+		return;
+	}
+
+	$table = $oms_usage_db . ".CONF_CHANGES";
+
 	$fields = "*";
 	$where = array("processed" => false);
-	$sort = "username";
+	$sort = "id";
 	$sortorder = "ASC";
 	$result = select_query($table, $fields, $where, $sort, $sortorder);
 
 	if ($result) {
-		$productIds = array();
+
 		while ($data = mysql_fetch_array($result)) {
+			$id = $data['id'];
 			$username = $data['username'];
 			$userid = get_userid($username);
-			$amount = $data['cores'] * $p_core + $data['disk'] * $p_disk + $data['memory'] * $p_memory;
-			removeCreditForUserId($userid, $amount, $data['cores'] . " cores. " . $data['disk'] . " GB storage." . $data['memory'] . " GB RAM." . $data['number_of_vms'] . " vms.");
+			if ($userid) {
+				$amount = $data['cores'] * $p_core + $data['disk'] * $p_disk + $data['memory'] * $p_memory;
+				$isSuccess = removeCreditForUserId($userid, -$amount, $data['cores'] . " cores. " . $data['disk'] . " GB storage." . $data['memory'] . " GB RAM." . $data['number_of_vms'] . " vms.");
+				if ($isSuccess) {
+					logActivity("Marking row with id " . $id . " as processed.");
+					$u_update = array("processed" => true);
+					$u_where = array("id" => $id);
+					update_query($table, $u_update, $u_where);
+				}
+			} else {
+				logActivity("Userid not found for username " . $username);
+			}
 		}
 	}
 
@@ -53,12 +71,13 @@ function removeCreditForUserId($userId, $amount, $desc) {
 
 	if ($clientData['result'] == "success") {
 		logActivity("Successfully removed amount of " . $amount . " credit from userId:" . $userId);
-		//print_r($userId . " newbalance:" . $clientData['newbalance']);
+		return true;
 	} else if ($clientData['result'] == "error") {
 		logActivity("Error removing credit from userId:" . $userId . ". Error:" . $clientData['message']);
+		return false;
 	}
 
-	return $clientCredit;
+	return false;
 }
 
 function getProductPriceByName($name) {
@@ -73,5 +92,5 @@ function getProductPriceByName($name) {
 	}
 }
 
-add_hook("DailyCronJob", 1, "reduce_users_credit");
+add_hook("DailyCronJob", 0, "reduce_users_credit");
 ?>
