@@ -7,4 +7,6 @@ $oms_user = "opennode";
 $oms_password = "changeme";
 
 $oms_img = "images/onc_logo_login_transparent.png";
+
+$oms_usage_db = "OMS_USAGE";
 ?>
