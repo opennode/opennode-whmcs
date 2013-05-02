@@ -5,12 +5,10 @@ if (!defined("WHMCS"))
 
 include_once (dirname(__FILE__) . '/inc/oms_utils.php');
 
+
 function create_new_vm_with_invoice($invoiceId) {
 	global $oms_usage_db;
-	//$invoiceId = 7;
-	//if ($_SESSION[uid] != 13)//For testing if not developer
-	//	return;
-
+	
 	logActivity("Starting to POST new vm data");
 
 	$invoice = getInvoiceById($invoiceId);
@@ -23,16 +21,26 @@ function create_new_vm_with_invoice($invoiceId) {
 		$vmData = array();
 		$itemId = $item[0]['relid'];
 		$clientproduct = getClientsProduct($userid, $itemId);
-		//pr($clientproduct);
+
+		//get template
+		if ($clientproduct[configoptions]) {
+			foreach ($clientproduct[configoptions] as $configoption) {
+				$confopt = $configoption[0];
+				if ($confopt[option] == "Template")
+					$vmData[template] = $confopt[value];
+			}
+		}
+		if (!$vmData[template]) {
+			logActivity("Error. No template found for product id:" . $itemId);
+			return;
+		}
 		//get data from client product
-		$vmData[template] = "pld-3.0-x86_64";
-		$vmData[hostname] = "pld-3.0-x86_64";
-		$vmData[root_password] = "root";
-		$vmData[root_password_repeat] = "root";
+		$vmData[hostname] = $clientproduct[domain];
+		$vmData[root_password] = $clientproduct[password];
+		$vmData[root_password_repeat] = $clientproduct[password];
 
 		//$vmData[swap_size]=0.5;
 		if ($clientproduct) {
-			//pr($clientproduct);
 			//get item
 			$products = getBundlesProductsByOtherProductId($clientproduct['pid']);
 			if ($products) {
@@ -61,20 +69,12 @@ function create_new_vm_with_invoice($invoiceId) {
 	logActivity("POST-ing new vm data ended.");
 }
 
-function pr($data) {
-	print_r("<PRE>");
-	print_r($data);
-	print_r("/<PRE>");
-}
-
 function getInvoiceById($invoiceId) {
 	$command = "getinvoice";
 	$adminuser = "admin";
 	$values["invoiceid"] = $invoiceId;
 
 	$invoice = localAPI($command, $values, $adminuser);
-	//pr($invoice);
-
 	return $invoice;
 }
 
@@ -124,7 +124,7 @@ function getBundlesProductsByOtherProductId($productId) {
 		foreach ($productIds as $id => $count) {
 			//print_r("Product with id:" . $id . ", count:" . $count);
 			//Query for products
-			$sql = "SELECT DISTINCT * FROM tblproducts product JOIN tblpricing price ON product.id = price.relid WHERE price.type='product' AND product.id = '" . $id . "'";
+			$sql = "SELECT DISTINCT * FROM tblproducts product WHERE product.id = '" . $id . "'";
 			$query = mysql_query($sql);
 			$product = mysql_fetch_array($query);
 
@@ -142,8 +142,5 @@ function getBundlesProductsByOtherProductId($productId) {
 	return null;
 }
 
-//add_hook("ClientAreaPage", 1, "create_new_vm_with_invoice");
-//For testing
-//add_hook("AcceptOrder", 0, "create_new_vm");
-//add_hook("InvoicePaid", 1, "create_new_vm_with_invoice");
+add_hook("InvoicePaid", 1, "create_new_vm_with_invoice");
 ?>
