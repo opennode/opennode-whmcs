@@ -15,6 +15,10 @@ function create_new_vm_with_invoice($invoiceId) {
 
 	$userid = $invoice['userid'];
 	$username = get_username($userid);
+	if (!$username) {
+		logActivity("No username found for id:$userid");
+		return;
+	}
 
 	$items = $invoice['items'];
 	foreach ($items as $item) {
@@ -58,7 +62,15 @@ function create_new_vm_with_invoice($invoiceId) {
 					logActivity("Running oms command to create VM.");
 
 					$command = '/machines/hangar/vms-openvz';
-					oms_command($command, json_encode($vmData));
+					$result = oms_command($command, json_encode($vmData));
+					$data = json_decode($result);
+					if ($data->result->id) {
+						logActivity("Running command Chown for username:".$username." and computeId:".$data->result->id);
+						$command = '/bin/chown?arg=' . $username . '&arg=/computes/by-name/' . $data->result->id . '&asynchronous';
+						oms_command($command);
+					}else{
+						logActivity("Error running command Chown for username:".$username.". No computeId");
+					}
 				} else {
 					logActivity("Error: VM settings not set.");
 				}
@@ -122,7 +134,6 @@ function getBundlesProductsByOtherProductId($productId) {
 		$products = array();
 		$sum = 0;
 		foreach ($productIds as $id => $count) {
-			//print_r("Product with id:" . $id . ", count:" . $count);
 			//Query for products
 			$sql = "SELECT DISTINCT * FROM tblproducts product WHERE product.id = '" . $id . "'";
 			$query = mysql_query($sql);
