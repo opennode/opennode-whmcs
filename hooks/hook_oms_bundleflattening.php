@@ -5,46 +5,66 @@ if (!defined("WHMCS"))
 
 include_once (dirname(__FILE__) . '/inc/oms_utils.php');
 
-function p($data) {
-	print_r("<PRE>");
-	print_r($data);
-	print_r("</PRE>");
-}
 
-function flatten_bundle() {
+function flatten_bundle($serviceid) {
 	global $oms_generated_group_id;
 	if (!$oms_generated_group_id) {
 		logActivity("Error: No $oms_generated_group_id defined.");
 		return;
 	}
-	if ($_SESSION[uid] != 13)//For testing if not developer
-		return;
+
 
 	$bundles = getBundlesWithUpdatedData();
 	if (!$bundles)
 		return;
 	foreach ($bundles as $bundle) {
 
-		$sql = "SELECT * FROM tblproducts WHERE name = '" . $bundle[name] . "' and gid=".$oms_generated_group_id;
-		$query = mysql_query($sql);
-		$product = mysql_fetch_array($query);
+		$values["type"] = "server";
+		$values["gid"] = $oms_generated_group_id;
+		$values["name"] = $bundle[name];
+		$values["description"] = $bundle[description];
+		$values["welcomeemail"] = "5";
+		$values["paytype"] = "onetime";
+		$values["pricing"][1] = array("monthly" => $bundle[displayprice]);
+		createOrUpdateProduct($values);
 
+	}
+}
+
+function createOrUpdateProduct($values) {
+	global $oms_generated_group_id;
+	$sql = "SELECT * FROM tblproducts WHERE name = '" . $values[name] . "' and gid=" . $oms_generated_group_id;
+	$query = mysql_query($sql);
+	$product = mysql_fetch_array($query);
+	if ($product) {
+		logActivity("Updating product with id:" . $product[id]);
+
+		$pricing = $values["pricing"];
+		unset($values["pricing"]);
+
+		//update product
 		$table = "tblproducts";
-		$values = array("name" => $bundle[name], "type" => "server", "paytype" => "onetime", "description" => $bundle[description], "displayprice" => $bundle[displayprice], "gid" => $oms_generated_group_id);
-		if ($product) {
-			logActivity("Updating product with name:" . $bundle[name]);
-			p("Updating product with id:" . $product[id]);
+		$where = array("id" => $product[id]);
 
-			$where = array("id" => $product[id]);
-			update_query($table, $values, $where);
-
-		} else {
-			logActivity("Creating product with name:" . $bundle[name]);
-			p("Creating product with name:" . $bundle[name]);
-			$newid = insert_query($table, $values);
-			p($newid);
+		//update product prices
+		$table = "tblpricing";
+		$where = array("relid" => $product[id]);
+		foreach ($pricing as $price) {
+			update_query($table, $price, $where);
+		}
+	} else {
+		logActivity("Creating product with name:" . $values[name]);
+		$command = "addproduct";
+		$adminuser = "admin";
+		$result = localAPI($command, $values, $adminuser);
+		if ($result['result'] == 'success') {
+			logActivity("Created product with name: " . $values[name] . ". PID:" . $result['pid']);
+			return $result['pid'];
+		} else if ($result['result'] == 'error') {
+			logActivity("Error creating product with name: " . $values[name] . ". Message:" . $result['message']);
 		}
 	}
+	return -1;
 }
 
 function getBundlesWithUpdatedData() {
@@ -129,5 +149,5 @@ function getBundlesWithUpdatedData() {
 	return null;
 }
 
-add_hook("ClientAreaPage", 1, "flatten_bundle");
+add_hook("AdminServiceEdit", 0, "flatten_bundle");
 ?>
