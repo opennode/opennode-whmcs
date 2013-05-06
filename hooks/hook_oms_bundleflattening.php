@@ -23,7 +23,6 @@ function flatten_bundle($serviceid) {
 		$values["gid"] = $oms_generated_group_id;
 		$values["name"] = $bundle[name];
 		$values["description"] = $bundle[description];
-		$values["welcomeemail"] = "5";
 		$values["paytype"] = "onetime";
 		$values["pricing"][1] = array("monthly" => $bundle[displayprice]);
 		createOrUpdateProduct($values);
