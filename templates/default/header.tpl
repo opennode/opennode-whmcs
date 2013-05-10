@@ -44,6 +44,10 @@
 			<li><a href="{if $loggedin}clientarea{else}index{/if}.php">{$LANG.hometitle}</a></li>
 		</ul>
 {if $loggedin}
+
+    <ul class="nav">
+        <li><a href="console.php">{$LANG.console}</a></li>
+    </ul>
     <ul class="nav">
         <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">{$LANG.navservices}&nbsp;<b class="caret"></b></a>
           <ul class="dropdown-menu">
