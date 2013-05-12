@@ -17,6 +17,20 @@ function get_username($userid) {
     return $username;
 }
 
+/*
+ Extract userid from the custom field with a specified name ('Username').
+*/
+function get_userid($username) {
+	$result = mysql_query("SELECT id FROM tblcustomfields WHERE fieldname='Username'");
+	$grab_customfieldid = mysql_fetch_row($result);
+	$username_customfieldid = $grab_customfieldid[0];
+
+	// get username value
+	$result = mysql_query("SELECT relid FROM tblcustomfieldsvalues WHERE fieldid = " . $username_customfieldid . " and value = '" . $username . "'");
+	$useridfield = mysql_fetch_row($result);
+	$userid = $useridfield[0];
+	return $userid;
+}
 /* 
  Check if a specified username already exists.
 */
