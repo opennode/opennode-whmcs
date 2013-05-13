@@ -1,14 +1,62 @@
 <?php
+include_once ("configuration.php");
+include_once ('includes/hooks/inc/oms_utils.php');
 
-if (!defined("WHMCS"))
-	die("This file cannot be accessed directly");
+try {
+	// Check MySQL Configuration
+	$db_conn = mysql_connect($db_host, $db_username, $db_password);
+	if (empty($db_conn))
+		throw new Exception('Unable to connect to DB');
 
-include_once (dirname(__FILE__) . '/inc/oms_utils.php');
+	$db_select = @mysql_select_db($db_name, $db_conn);
+	if (empty($db_select))
+		throw new Exception('Unable to select WHMCS database');
+
+} catch (Exception $e) {
+	echo 'Error: ', $e -> getMessage(), "\n";
+}
+
+function logActivity($msg) {
+	$postfields["action"] = "logactivity";
+	$postfields["description"] = $msg;
+	callApi($postfields);
+}
+
+function callApi($postfields) {
+	global $whmcs_admin_user, $whmcs_admin_password;
+	$postfields["username"] = $whmcs_admin_user;
+	$postfields["password"] = md5($whmcs_admin_password);
+	$ch = curl_init();
+	$url = "http://localhost/whmcs/includes/api.php";
+	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_POST, 1);
+	curl_setopt($ch, CURLOPT_TIMEOUT, 100);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
+	$data = curl_exec($ch);
+	curl_close($ch);
+	$data = explode(";", $data);
+	foreach ($data AS $temp) {
+		$temp = explode("=", $temp);
+		if (isset($temp[1])) {
+			$results[$temp[0]] = $temp[1];
+		}
+
+	}
+
+	if ($results["result"] == "success") {
+		# Result was OK!
+	} else {
+		# An error occured
+		echo "The following error occured: " . $results["message"];
+	}
+	return $results;
+}
 
 function reduce_users_credit() {
 	global $oms_usage_db;
 
-	logActivity("Starting clients credit reduction job.");
+	logActivity("Starting clients credit reduction CRON job.");
 
 	//Get products prices
 	$p_core = getProductPriceByName("1 Core");
@@ -63,7 +111,7 @@ function reduce_users_credit() {
 		}
 	}
 
-	logActivity("Client credit reduction job ended.");
+	logActivity("Client credit reduction CRON job ended.");
 }
 
 function removeCreditForUserId($userId, $username, $amount, $desc) {
@@ -72,13 +120,12 @@ function removeCreditForUserId($userId, $username, $amount, $desc) {
 		return;
 	}
 
-	$command = "addcredit";
-	$adminuser = "admin";
-	$values["clientid"] = $userId;
-	$values["description"] = $desc;
-	$values["amount"] = $amount;
+	$postfields["action"] = "addcredit";
+	$postfields["clientid"] = $userId;
+	$postfields["description"] = $desc;
+	$postfields["amount"] = $amount;
 
-	$clientData = localAPI($command, $values, $adminuser);
+	$clientData = callAPI($postfields);
 
 	if ($clientData['result'] == "success") {
 		logActivity("Successfully removed amount of " . $amount . " credit from userId:" . $userId . "(" . $username . ")");
@@ -110,8 +157,8 @@ function getUserCreditLastReductionRuntime($userId, $username) {
 	$sql = "SELECT MAX(TIMESTAMP) as timestamp FROM " . $table . " WHERE userid=" . $userId;
 	$query = mysql_query($sql);
 	$result = mysql_fetch_array($query);
-	if ($result[timestamp]) {
-		return $result[timestamp];
+	if ($result['timestamp']) {
+		return $result['timestamp'];
 	} else {
 		// If script is run for first time for user, then timestamp must come from conf_changes table
 		$table = $oms_usage_db . ".CONF_CHANGES";
@@ -138,4 +185,5 @@ function updateUserCreditReductionRuntime($userId) {
 	return $retval;
 }
 
+reduce_users_credit();
 ?>
