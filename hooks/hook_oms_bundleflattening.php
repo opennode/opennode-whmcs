@@ -11,6 +11,13 @@ include_once (dirname(__FILE__) . '/inc/oms_utils.php');
  */
 function flatten_bundle($serviceid) {
 	global $oms_generated_group_id;
+
+	//FOR MANUAL RUN
+	/*if ($_SESSION['uid'] == 13)//Logged in user UID
+		print_r("Flattening bundles");
+	else
+		return;*/
+
 	if (!$oms_generated_group_id) {
 		logActivity("Error: No $oms_generated_group_id defined.");
 		return;
@@ -150,7 +157,8 @@ function createOrUpdateProduct($values) {
 		//update product
 		$table = "tblproducts";
 		$where = array("id" => $product[id]);
-
+		update_query($table, $values, $where);
+		
 		//update product prices
 		$table = "tblpricing";
 		$where = array("relid" => $product[id]);
@@ -209,8 +217,8 @@ function getBundlesWithUpdatedData() {
 				preg_match($ptnNr, $str, $matchNr);
 				if ($matchNr) {
 					$productId = $matchNr[0];
-					$productIds[$productId]++;
-					$productCount[$id][$productId] = $productIds[$productId];
+					$productIds[$productId] = $productId;
+					$productCount[$id][$productId]++;
 				} else
 					logActivity("Error parsing itemdata to get product id.");
 			}
@@ -228,24 +236,24 @@ function getBundlesWithUpdatedData() {
 					if ($bundleValue[$id]) {
 						$count = $bundleValue[$id];
 						$bundlesCalculated[$bundleId][sum] += $product['monthly'] * $count;
-						$itemDesc = (($count > 1) ? ($count . " x ") : '') . $product['name'];
+						$itemDesc = $count . " ". $product['name'];
 						$bundlesCalculated[$bundleId][desc] .= $itemDesc . "\n";
 					}
 				}
 			} else {
 				logActivity("Error getting product");
 			}
-		}
 
+		}
 		//add calculated desc and price to bundle
 		foreach ($bundlesCalculated as $bundleCalcId => $bundleCalcVal) {
 			$bun = $bundle[$bundleCalcId];
 			if ($bun[displayprice] == 0.00) {
 				$bun[displayprice] = $bundleCalcVal[sum];
 			}
-			if (!$bun[description]) {
-				$bun[description] = $bundleCalcVal[desc];
-			}
+			//if (!$bun[description]) {
+			$bun[description] = $bundleCalcVal[desc];
+			//	}
 			$bundles[] = $bun;
 		}
 		return $bundles;
@@ -256,4 +264,7 @@ function getBundlesWithUpdatedData() {
 }
 
 add_hook("AdminServiceEdit", 0, "flatten_bundle");
+
+// FOR MANUAL RUN
+//add_hook("ClientAreaPage", 1, "flatten_bundle");
 ?>
