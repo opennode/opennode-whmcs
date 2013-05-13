@@ -1,5 +1,4 @@
 <?php
-echo "jea";
 include_once ("configuration.php");
 include_once ('includes/hooks/inc/oms_utils.php');
 
