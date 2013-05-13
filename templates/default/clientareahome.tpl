@@ -25,12 +25,12 @@
                 </div>
             </div>
 
-            <p>{$LANG.statsnumproducts}: <a href="clientarea.php?action=products"><strong>{$clientsstats.productsnumactive}</strong> ({$clientsstats.productsnumtotal}) - {$LANG.view} &raquo;</a></p>
-            <p>{$LANG.statsnumdomains}: <a href="clientarea.php?action=domains"><strong>{$clientsstats.numactivedomains}</strong> ({$clientsstats.numdomains}) - {$LANG.view} &raquo;</a></p>
-            <p>{$LANG.statsnumtickets}: <a href="supporttickets.php"><strong>{$clientsstats.numtickets}</strong> - {$LANG.view} &raquo;</a></p>
-            <p>{$LANG.statsnumreferredsignups}: <a href="affiliates.php"><strong>{$clientsstats.numaffiliatesignups}</strong> - {$LANG.view} &raquo;</a></p>
-            <p>{$LANG.creditcardyourinfo}: <strong>{if $defaultpaymentmethod}{$defaultpaymentmethod}{else}{$LANG.paymentmethoddefault}{/if}</strong> {if $clientsdetails.cctype}({$clientsdetails.cctype}-{$clientsdetails.cclastfour}) - <a href="clientarea.php?action=creditcard">Update &raquo;</a></p>{/if}
-
+            <p>{$LANG.statscurrentcredit}: <strong>{$omsdata.currentcredit}</strong> {$LANG.eur}</p>
+            <p>{$LANG.statsnrofvms}: <strong>{$omsdata.number_of_vms}</strong></p>
+            <p>{$LANG.statsnrofcores}: <strong>{$omsdata.cores}</strong></p>
+            <p>{$LANG.statstotalram}: <strong>{$omsdata.memory}</strong> {$LANG.mb}</p>
+            <p>{$LANG.statstotaldisk}: <strong>{$omsdata.disk}</strong> {$LANG.mb}</p>
+            <p>{$LANG.statsinfrprice}: <strong>{$omsdata.vm_cost}</strong> {$LANG.bundleeurperhour}</p>
         </div>
     </div>
 </div>
