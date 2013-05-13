@@ -11,7 +11,7 @@ function create_oms_account($vars) {
 
     $username = get_username($userid);
 
-    $command = '/bin/adduser?arg='.$username.'&arg='.$password;
+    $command = '/bin/adduser?arg='.$username.'&arg='.$password.'&--uid='.$userid;
     oms_command($command);
     logActivity('Added OMS username "'.$username.'"');
 }
