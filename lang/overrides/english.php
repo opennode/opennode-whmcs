@@ -1,8 +1,8 @@
 <?php
 $_LANG['orderpaymenttermonetimebundlestart'] = "Lasts for";
-$_LANG['orderpaymenttermonetimebundleend'] = " Hours";
-$_LANG['orderpaymenttermonetimebundleperhour'] = "per hour";
+$_LANG['orderpaymenttermonetimebundleend'] = " Months";
 $_LANG['bundleeurperhour'] = "EUR per hour";
+$_LANG['bundleeurpermonth'] = "per month";
 $_LANG['omsconsole'] = "OMS Console";
 $_LANG['console'] = "Console";
 
