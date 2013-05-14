@@ -16,4 +16,6 @@ $_LANG['mb'] = "MB";
 $_LANG['gb'] = "GB";
 $_LANG['eur'] = "EUR";
 
+$_LANG['navservicesorderbundles'] = "New VM";
+
 ?>

@@ -55,8 +55,8 @@
             <li><a href="clientarea.php?action=products">{$LANG.clientareanavservices}</a></li>
             {if $condlinks.pmaddon}<li><a href="index.php?m=project_management">{$LANG.clientareaprojects}</a></li>{/if}
             <li class="divider"></li>
-            <li><a href="cart.php">{$LANG.navservicesorder}</a></li>
-            <li><a href="cart.php?gid=addons">{$LANG.clientareaviewaddons}</a></li>
+            <li><a href="cart.php?gid=5">{$LANG.navservicesorderbundles}</a></li>
+          {* <li><a href="cart.php?gid=addons">{$LANG.clientareaviewaddons}</a></li> *}
           </ul>
         </li>
       </ul>
@@ -95,11 +95,11 @@
                 <li><a href="supporttickets.php">{$LANG.navtickets}</a></li>
                 <li><a href="knowledgebase.php">{$LANG.knowledgebasetitle}</a></li>
                 <li><a href="downloads.php">{$LANG.downloadstitle}</a></li>
-                <li><a href="serverstatus.php">{$LANG.networkstatustitle}</a></li>
+                {* <li><a href="serverstatus.php">{$LANG.networkstatustitle}</a></li> *}
               </ul>
             </li>
           </ul>
-
+{*
           <ul class="nav">
             <li><a href="submitticket.php">{$LANG.navopenticket}</a></li>
           </ul>
@@ -107,7 +107,7 @@
           {if $condlinks.affiliates}<ul class="nav">
             <li><a href="affiliates.php">{$LANG.affiliatestitle}</a></li>
           </ul>{/if}
-
+*}
           <ul class="nav pull-right">
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">{$LANG.hello}, {$loggedinuser.firstname}!&nbsp;<b class="caret"></b></a>
