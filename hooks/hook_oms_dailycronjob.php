@@ -16,10 +16,17 @@ function stop_users_vms() {
 		while ($data = mysql_fetch_array($result)) {
 			$userid = $data['id'];
 			$username = get_username($userid);
-			if (getCreditForUserId($userid) < 0) {
+			
+			$balanceLimit = get_balance_limit($userid);
+			if (!$balanceLimit || !is_numeric($balanceLimit))
+				$balanceLimit = 0;
+			
+			logActivity("Setting balance limit for user: " . $username. ". balanceLimit:".$balanceLimit);
+			
+			if (getCreditForUserId($userid) < $balanceLimit) {
 				logActivity("Stopping vms for user: " . $username);
 
-				$command = '/bin/stopvms?arg=-u&arg=' . $username;
+				$command = '/bin/stopvms?arg=-u&arg=' . $username.'&asynchronous';
 				$res = oms_command($command);
 
 				if ($res != -1)
