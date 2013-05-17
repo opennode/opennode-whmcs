@@ -30,9 +30,6 @@
 <a href="cart.php?gid={$gid}&currency={$curr.id}"><img src="images/flags/{if $curr.code eq "AUD"}au{elseif $curr.code eq "CAD"}ca{elseif $curr.code eq "EUR"}eu{elseif $curr.code eq "GBP"}gb{elseif $curr.code eq "INR"}in{elseif $curr.code eq "JPY"}jp{elseif $curr.code eq "USD"}us{elseif $curr.code eq "ZAR"}za{else}na{/if}.png" border="0" alt="" /> {$curr.code}</a>
 {/foreach}
 </div>
-<div class="cartIntro"><h3>INTRO PLACEHOLDER</h3><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam non dolor neque. In hac habitasse platea dictumst. In hac habitasse platea dictumst. Duis tortor augue, venenatis gravida fermentum et, bibendum quis sapien. Sed tincidunt tincidunt elit, lacinia eleifend neque aliquam at. Nunc a nibh mi. Praesent at felis urna, facilisis euismod risus. Fusce cursus massa et dolor hendrerit placerat.
-</p><p>
-Pellentesque placerat mollis risus. Vestibulum at enim leo. In blandit purus id eros vulputate interdum. Maecenas luctus scelerisque dapibus. Morbi convallis ornare nisl et imperdiet. Proin at nisi diam. Nulla iaculis rhoncus urna nec hendrerit. Vivamus consectetur venenatis ante ac viverra. Nulla non tellus a velit feugiat viverra. Maecenas ut nisl a tellus facilisis tincidunt. Aliquam sollicitudin congue interdum.</p></div>
 <div class="clear"></div>
 {/if}
 
