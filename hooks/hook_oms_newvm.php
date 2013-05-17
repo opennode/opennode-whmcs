@@ -66,7 +66,7 @@ function create_new_vm_with_invoice($invoiceId) {
 					$data = json_decode($result);
 					if ($data->result->id) {
 						logActivity("Running command Chown for username:".$username." and computeId:".$data->result->id);
-						$command = '/bin/chown?arg=' . $username . '&arg=/computes/by-name/' . $data->result->id . '&asynchronous';
+						$command = '/bin/chown?arg=' . $username . '&arg=/computes/by-name/' . $data -> result -> hostname . '&asynchronous';
 						oms_command($command);
 					}else{
 						logActivity("Error running command Chown for username:".$username.". No computeId");
