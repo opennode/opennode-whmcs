@@ -47,6 +47,7 @@ function create_new_vm_with_invoice($vars) {
 		$vmData['hostname'] = $clientproduct['domain'];
 		$vmData['root_password'] = $clientproduct['password'];
 		$vmData['root_password_repeat'] = $clientproduct['password'];
+		$vmData['nameservers'] = '8.8.8.8';
 
 		//$vmData[swap_size]=0.5;
 		if ($clientproduct) {
