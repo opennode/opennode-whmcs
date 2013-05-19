@@ -12,27 +12,28 @@ function stop_users_vms() {
 	$fields = "*";
 	$result = select_query($table, $fields);
 
-	if ($result) {
+		if ($result) {
 		while ($data = mysql_fetch_array($result)) {
 			$userid = $data['id'];
 			$username = get_username($userid);
-			
-			$balanceLimit = get_balance_limit($userid);
-			if (!$balanceLimit || !is_numeric($balanceLimit))
-				$balanceLimit = 0;
-			
-			logActivity("Setting balance limit for user: " . $username. ". balanceLimit:".$balanceLimit);
-			
-			if (getCreditForUserId($userid) < $balanceLimit) {
-				logActivity("Stopping vms for user: " . $username);
+			if ($username) {
+				$balanceLimit = get_balance_limit($userid);
+				if (!$balanceLimit || !is_numeric($balanceLimit))
+					$balanceLimit = 0;
 
-				$command = '/bin/stopvms?arg=-u&arg=' . $username.'&asynchronous';
-				$res = oms_command($command);
+				logActivity("Setting balance limit for user: " . $username . ". balanceLimit:" . $balanceLimit);
 
-				if ($res != -1)
-					logActivity("Stopped vms for user: " . $username . ". Result:" . $res);
-				else
-					logActivity("Stoping vms Failed for user: " . $username);
+				if (getCreditForUserId($userid) < $balanceLimit) {
+					logActivity("Stopping vms for user: " . $username);
+
+					$command = '/bin/stopvms?arg=-u&arg=' . $username . '&asynchronous';
+					$res = oms_command($command);
+
+					if ($res != -1)
+						logActivity("Stopped vms for user: " . $username . ". Result:" . $res);
+					else
+						logActivity("Stoping vms Failed for user: " . $username);
+				}
 			}
 		}
 	}
