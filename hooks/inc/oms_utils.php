@@ -51,7 +51,7 @@ function exists_username($username) {
 /* 
  Execute command against OMS server.
 */
-function oms_command($command_path) {
+function oms_command($command_path, $data) {
     global $oms_hostname, $oms_user, $oms_password;
     // construct full url
     $curl = curl_init($oms_hostname.$command_path);
@@ -68,6 +68,12 @@ function oms_command($command_path) {
     curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC ) ;
     curl_setopt($curl, CURLOPT_USERPWD, $oms_user . ":" . $oms_password);	
 	curl_setopt($curl, CURLOPT_POST, 1);
+	if ($data) {
+		//redefine, if data then POST
+		curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'POST');
+		curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+		curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'Content-Length: ' . strlen($data)));
+	}
     $res = curl_exec($curl);
     if ( !$res ) {
 	error_log('Error during OMS call: '.curl_error($curl));

@@ -9,9 +9,11 @@ $oms_password = "changeme";
 $oms_img = "images/onc_logo_login_transparent.png";
 
 $oms_usage_db = "OMS_USAGE";
-
 // Used to connect to externalApi in cron
 $whmcs_admin_user = "admin";
 $whmcs_admin_password = "password";
 
+$product_core_name="Core";
+$product_disk_name="GB Storage";
+$product_memory_name="GB RAM";
 ?>

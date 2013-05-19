@@ -6,14 +6,14 @@ if (!defined("WHMCS"))
 include_once (dirname(__FILE__) . '/inc/oms_utils.php');
 
 function reduce_users_credit() {
-	global $oms_usage_db;
+	global $oms_usage_db, $product_core_name, $product_disk_name, $product_memory_name;
 
 	logActivity("Starting clients credit reduction job.");
 
 	//Get products prices
-	$p_core = getProductPriceByName("1 Core");
-	$p_disk = getProductPriceByName("1GB Storage");
-	$p_memory = getProductPriceByName("1GB RAM");
+	$p_core = getProductPriceByName($product_core_name);
+	$p_disk = getProductPriceByName($product_disk_name);
+	$p_memory = getProductPriceByName($product_memory_name);
 	logActivity("Using product prices for calculations: Cores:" . $p_core . ". Disk:" . $p_disk . ".Memory:" . $p_memory);
 
 	if (!$p_core || !$p_disk || !$p_memory) {
