@@ -13,7 +13,15 @@ $oms_usage_db = "OMS_USAGE";
 $whmcs_admin_user = "admin";
 $whmcs_admin_password = "password";
 
+
 $product_core_name="Core";
 $product_disk_name="GB Storage";
 $product_memory_name="GB RAM";
+
+$oms_bundles_group_id=4;
+$oms_generated_group_id=5;
+
+//name of config group where oms templates config options are created (config group is created automattically)
+$oms_templates_conf_group_name = "Bundles fields";
+
 ?>
