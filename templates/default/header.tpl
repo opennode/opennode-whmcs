@@ -26,7 +26,7 @@
         <div id="whmcstxtlogo"><a href="cart.php">{$companyname}</a></div>
         <div id="whmcsimglogo">
             <a href="cart.php"><img src="templates/{$template}/img/whmcslogo.png" alt="{$companyname}" /></a>
-            <a href="{$oms_link}" style="float: right" target="_blank"><img src="{$oms_img}" alt="{$LANG.omsconsole}" /></a>
+            <span style="float: right"><img src="{$oms_img}" alt="{$LANG.omsconsole}" /></span>
         </div>
     </div>
 </div>
