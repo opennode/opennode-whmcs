@@ -6,12 +6,12 @@ if (!defined("WHMCS"))
 include_once (dirname(__FILE__) . '/inc/oms_utils.php');
 
 function addParams($vars) {
-	global $oms_img, $oms_hostname, $oms_pass;
+	global $oms_img, $oms_hostname, $oms_pass, $oms_bundles_group_id, $oms_generated_group_id;
 
 	$oms_iframe_logout_src = $oms_hostname . 'logout';
 	$oms_iframe_logout = '<iframe name="oms_iframe" src="' . $oms_iframe_logout_src . '" style="display:none"></iframe>';
 
-	$arr = array("oms_img" => $oms_img, "oms_link" => $oms_hostname, "oms_iframe_logout" => $oms_iframe_logout);
+	$arr = array("oms_img" => $oms_img, "oms_link" => $oms_hostname, "oms_iframe_logout" => $oms_iframe_logout, "OMS_BUNDLE_ID" => $oms_bundles_group_id, "OMS_GENERATED_ID" => $oms_generated_group_id);
 
 	$userId = $_SESSION['uid'];
 	if ($userId) {
@@ -73,6 +73,10 @@ function addIframe($vars) {
 		}
 
 	}
+=======
+	global $oms_img,$oms_hostname, $oms_bundles_group_id, $oms_generated_group_id;
+	return array("oms_img" => $oms_img, "oms_link"=>$oms_hostname, "OMS_BUNDLE_ID" => $oms_bundles_group_id, "OMS_GENERATED_ID" => $oms_generated_group_id);
+>>>>>>> 162df1b... Changes to displaying data(OMS-377)
 }
 
 add_hook("ClientAreaPage", 1, "addParams");
