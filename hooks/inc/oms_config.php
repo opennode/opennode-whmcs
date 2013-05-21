@@ -23,6 +23,9 @@ $oms_generated_group_id=5;
 
 //name of config group where oms templates config options are created (config group is created automattically)
 $oms_templates_conf_group_name = "Bundles fields";
+
+$vm_default_nameservers = '8.8.8.8';
+
 //if this is defined or not empty then templates are not queried from OMS
 //For display:
 $oms_templates = array('CentOS 6 64-bit','Ubuntu 12.04 LTS','OpenSuse');

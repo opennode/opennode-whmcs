@@ -6,7 +6,7 @@ if (!defined("WHMCS"))
 include_once (dirname(__FILE__) . '/inc/oms_utils.php');
 
 function create_new_vm_with_invoice($vars) {
-	global $oms_usage_db, $oms_templates_mapping;
+	global $oms_usage_db, $oms_templates_mapping, $vm_default_nameservers;
 	$invoiceId = $vars['invoiceid'];
 
 	logActivity("Starting to POST new vm data and adding credit for invoice:" . $invoiceId);
@@ -62,7 +62,7 @@ function create_new_vm_with_invoice($vars) {
 		$vmData['hostname'] = $clientproduct['domain'];
 		$vmData['root_password'] = $clientproduct['password'];
 		$vmData['root_password_repeat'] = $clientproduct['password'];
-		$vmData['nameservers'] = '8.8.8.8';
+		$vmData['nameservers'] = $vm_default_nameservers;
 
 		//$vmData[swap_size]=0.5;
 		if ($clientproduct) {
