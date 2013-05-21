@@ -1,4 +1,5 @@
 <?php
+
 include_once ("configuration.php");
 include_once ('includes/hooks/inc/oms_utils.php');
 
@@ -54,19 +55,20 @@ function callApi($postfields) {
 }
 
 function reduce_users_credit() {
-	global $oms_usage_db;
+	global $oms_usage_db, $product_core_name, $product_disk_name, $product_memory_name;;
 
 	logActivity("Starting clients credit reduction CRON job.");
 
 	//Get products prices
-	$p_core = getProductPriceByName("1 Core");
-	$p_disk = getProductPriceByName("1GB Storage");
-	$p_memory = getProductPriceByName("1GB RAM");
-	logActivity("Using product prices for calculations: Cores:" . $p_core . ". Disk:" . $p_disk . ".Memory:" . $p_memory);
-
+	$p_core = getProductPriceByName($product_core_name);
+	$p_disk = getProductPriceByName($product_disk_name);
+	$p_memory = getProductPriceByName($product_memory_name);
+	
 	if (!$p_core || !$p_disk || !$p_memory) {
 		logActivity("Error: Product prices not set.");
 		return;
+	}else{
+		logActivity("Using product prices for calculations: Cores:" . $p_core . ". Disk:" . $p_disk . ".Memory:" . $p_memory);
 	}
 
 	$table = $oms_usage_db . ".CONF_CHANGES";
