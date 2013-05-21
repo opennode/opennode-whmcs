@@ -23,5 +23,10 @@ $oms_generated_group_id=5;
 
 //name of config group where oms templates config options are created (config group is created automattically)
 $oms_templates_conf_group_name = "Bundles fields";
+//if this is defined or not empty then templates are not queried from OMS
+//For display:
+$oms_templates = array('CentOS 6 64-bit','Ubuntu 12.04 LTS','OpenSuse');
+//For finding oms template by name. Add elements, dont remove.
+$oms_templates_mapping = array('CentOS 6 64-bit'=>'centos-4.9-x86_64-asys','Ubuntu 12.04 LTS'=>'ubuntu-12.04-x86_64-asys','OpenSuse'=>'suse-12.2-x86_64-asys');
 
 ?>
