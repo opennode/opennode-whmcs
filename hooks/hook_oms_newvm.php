@@ -6,9 +6,10 @@ if (!defined("WHMCS"))
 include_once (dirname(__FILE__) . '/inc/oms_utils.php');
 
 function create_new_vm_with_invoice($vars) {
-	global $oms_usage_db;
+	global $oms_usage_db, $oms_templates_mapping, $vm_default_nameservers;
 	$invoiceId = $vars['invoiceid'];
-	logActivity("Starting to POST new vm data and adding credit for invoice:".$invoiceId);
+
+	logActivity("Starting to POST new vm data and adding credit for invoice:" . $invoiceId);
 
 	$invoice = getInvoiceById($invoiceId);
 
@@ -35,8 +36,22 @@ function create_new_vm_with_invoice($vars) {
 		if ($clientproduct['configoptions']) {
 			foreach ($clientproduct['configoptions'] as $configoption) {
 				$confopt = $configoption[0];
-				if ($confopt['option'] == "Template")
-					$vmData['template'] = $confopt['value'];
+				if ($confopt['option'] == "Template") {
+					//Use value(OMS template name) or find it from mapping variableF
+					if (is_array($oms_templates_mapping) && count($oms_templates_mapping) > 0) {
+						
+						$template = $oms_templates_mapping[$confopt['value']];
+						if (!$template) {
+							logActivity("Error: No OMS template found in oms_templates_mapping for value(using it instead):" . $confopt['value']);
+							$vmData['template'] = $confopt['value'];
+						} else {
+							$vmData['template'] = $template;
+							logActivity("Using template name from mapping variable:" . $template);
+						}
+					} else {
+						$vmData['template'] = $confopt['value'];
+					}
+				}
 			}
 		}
 		if (!$vmData['template']) {
@@ -47,6 +62,7 @@ function create_new_vm_with_invoice($vars) {
 		$vmData['hostname'] = $clientproduct['domain'];
 		$vmData['root_password'] = $clientproduct['password'];
 		$vmData['root_password_repeat'] = $clientproduct['password'];
+		$vmData['nameservers'] = $vm_default_nameservers;
 
 		//$vmData[swap_size]=0.5;
 		if ($clientproduct) {
@@ -68,11 +84,13 @@ function create_new_vm_with_invoice($vars) {
 
 					$command = '/machines/hangar/vms-openvz';
 					$result = oms_command($command, json_encode($vmData));
+					logActivity($result);
 					$data = json_decode($result);
 					if ($data -> result -> id) {
-						logActivity("Running command Chown for username:" . $username . " and computeId:" . $data -> result -> id);
-						$command = '/bin/chown?arg=' . $username . '&arg=/computes/by-name/' . $data -> result -> hostname . '&asynchronous';
-						oms_command($command);
+						logActivity("Running command Chown for username:" . $username . " and url:" . $data -> result -> url);
+						$command = '/bin/chown?arg=' . $username . '&arg=' . $data -> result -> url ;//. '&asynchronous';
+						$res=oms_command($command);
+						logActivity($res);
 					} else {
 						logActivity("Error running command Chown for username:" . $username . ". No computeId");
 					}
