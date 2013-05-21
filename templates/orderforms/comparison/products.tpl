@@ -46,7 +46,7 @@
 <div class="prodtablecol">
 <div class="{if $num % 2 == 0}a{else}b{/if}header{if !count($products.0.features)}expandable{/if}">
 <span class="title">{$product.name}</span><br />
-{assign var="OMS_BUNDLE_ID" value="4"}
+
 {if $product.bid}
     {if $gid eq $OMS_BUNDLE_ID}
        {oms_bundle_products groupId=$gid bundleId=$product.bid}
@@ -62,8 +62,11 @@
 {elseif $product.paytype eq "free"}
 {$LANG.orderfree}
 {elseif $product.paytype eq "onetime"}
-
-{$product.pricing.onetime} {$LANG.orderpaymenttermonetime}<br />
+ 	 {if $gid eq $OMS_GENERATED_ID}
++      {$product.pricing.onetime} {$LANG.bundleeurpermonth} <br />
++    {else}
++      {$product.pricing.onetime} {$LANG.orderpaymenttermonetime}<br />
++    {/if}
 {else}
 {$product.pricing.monthly}
 {/if}<br />
@@ -84,10 +87,19 @@
     {else}
         <div class="{if $num % 2 == 0}a{else}b{/if}featuredesc{cycle name=$product.pid values="1,2"}">
             {$product.description}<br/>
-            {oms_bundle_credit_time groupId=$OMS_BUNDLE_ID}
-            {foreach from=$bundleNameAndSum item=bundle}
-                <b>{$bundle.name}</b>  {oms_credit_time eurPerHour=$bundle.price  credit=$product.pricing.onetime digits=2} {$LANG.orderpaymenttermonetimebundleend}<br/>
-            {/foreach}
+            
+            {if $gid eq $OMS_GENERATED_ID}
+                {foreach key=num item=bundle from=$products}
+                    {if $bundle.pid neq $product.pid}
+                        <b>{$bundle.name}</b>  {oms_credit_time eurPerHour=$bundle.pricing.onetime  credit=$product.pricing.onetime digits=2} {$LANG.orderpaymenttermonetimebundleend}<br/>
+                    {/if}
+                {/foreach}
+            {else}
+                {oms_bundle_credit_time groupId=$OMS_BUNDLE_ID}
+                {foreach from=$bundleNameAndSum item=bundle}
+                    <b>{$bundle.name}</b>  {oms_credit_time eurPerHour=$bundle.price  credit=$product.pricing.onetime digits=2} {$LANG.orderpaymenttermonetimebundleend}<br/>
+                {/foreach}
+            {/if}
         </div>
     {/if}
 {/foreach}
