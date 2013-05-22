@@ -31,7 +31,7 @@ function create_new_vm_with_invoice($vars) {
 		//unused field 'recurringamount'
 		$desc = "Adding credit for invoice:" . $invoiceId;
 		addCreditForUserId($userId, $username, $amount, $desc);
-
+		updateClientCreditBalance($userId);
 		//get template
 		if ($clientproduct['configoptions']) {
 			foreach ($clientproduct['configoptions'] as $configoption) {

@@ -23,39 +23,9 @@ function logActivity($msg) {
 	callApi($postfields);
 }
 
-function callApi($postfields) {
-	global $whmcs_admin_user, $whmcs_admin_password;
-	$postfields["username"] = $whmcs_admin_user;
-	$postfields["password"] = md5($whmcs_admin_password);
-	$ch = curl_init();
-	$url = "http://localhost/whmcs/includes/api.php";
-	curl_setopt($ch, CURLOPT_URL, $url);
-	curl_setopt($ch, CURLOPT_POST, 1);
-	curl_setopt($ch, CURLOPT_TIMEOUT, 100);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-	curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
-	$data = curl_exec($ch);
-	curl_close($ch);
-	$data = explode(";", $data);
-	foreach ($data AS $temp) {
-		$temp = explode("=", $temp);
-		if (isset($temp[1])) {
-			$results[$temp[0]] = $temp[1];
-		}
-
-	}
-
-	if ($results["result"] == "success") {
-		# Result was OK!
-	} else {
-		# An error occured
-		echo "The following error occured: " . $results["message"];
-	}
-	return $results;
-}
 
 function reduce_users_credit() {
-	global $oms_usage_db, $product_core_name, $product_disk_name, $product_memory_name;;
+	global $oms_usage_db, $product_core_name, $product_disk_name, $product_memory_name;
 
 	logActivity("Starting clients credit reduction CRON job.");
 
@@ -63,11 +33,11 @@ function reduce_users_credit() {
 	$p_core = getProductPriceByName($product_core_name);
 	$p_disk = getProductPriceByName($product_disk_name);
 	$p_memory = getProductPriceByName($product_memory_name);
-	
+
 	if (!$p_core || !$p_disk || !$p_memory) {
 		logActivity("Error: Product prices not set.");
 		return;
-	}else{
+	} else {
 		logActivity("Using product prices for calculations: Cores:" . $p_core . ". Disk:" . $p_disk . ".Memory:" . $p_memory);
 	}
 
@@ -101,10 +71,12 @@ function reduce_users_credit() {
 						$isSuccess = removeCreditForUserId($userid, $username, -$amount * $hours / $hoursInMonth, $data['cores'] . " cores. " . $data['disk'] . " GB storage." . $data['memory'] . " GB RAM." . $data['number_of_vms'] . " vms.");
 						if ($isSuccess) {
 							updateUserCreditReductionRuntime($userid);
+							updateClientCreditBalance($userid);
 						} else {
 							logActivity("Error: Credit reduction error for user:" . $username . ".");
 						}
 					}
+					
 				} else {
 					error_log("No lastTimestamp found for user:" . $username . ".");
 				}
@@ -187,6 +159,7 @@ function updateUserCreditReductionRuntime($userId) {
 	}
 	return $retval;
 }
+
 
 reduce_users_credit();
 ?>

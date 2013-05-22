@@ -12,7 +12,7 @@ $oms_usage_db = "OMS_USAGE";
 // Used to connect to externalApi in cron
 $whmcs_admin_user = "admin";
 $whmcs_admin_password = "password";
-
+$whmcs_api_url = "http://localhost/includes/api.php";
 
 $product_core_name="Core";
 $product_disk_name="GB Storage";
