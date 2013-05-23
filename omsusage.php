@@ -5,7 +5,7 @@ require ("init.php");
 include_once ('includes/hooks/inc/oms_utils.php');
 
 $ca = new WHMCS_ClientArea();
-$ca -> setPageTitle("Your Page Title Goes Here");
+$ca -> setPageTitle("Resource consumption summary");
 
 $ca -> addToBreadCrumb('index.php', $whmcs -> get_lang('globalsystemname'));
 $ca -> addToBreadCrumb('oms_usage.php', 'OMS usage');
