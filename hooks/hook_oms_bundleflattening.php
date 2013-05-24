@@ -30,6 +30,7 @@ function hook_bundleflattening($vars) {
 		$values["gid"] = $oms_generated_group_id;
 		$values["name"] = $bundle[name];
 		$values["description"] = $bundle[description];
+		$values["order"] = $bundle["sortorder"];
 		$values["paytype"] = "onetime";
 		$values["pricing"][1] = array("monthly" => $bundle[displayprice]);
 		$productId = createOrUpdateProduct($values);
