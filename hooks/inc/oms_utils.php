@@ -152,6 +152,9 @@ function updateClientCreditBalance($userId) {
 
 	if ($clientData['result'] == "success") {
 		foreach ($clientData['credits'] as $creditArr) {
+			//Make one dimentsional two dimentsional
+			if (!is_array($creditArr[0]))
+				$creditArr = Array($creditArr);
 			foreach ($creditArr as $credit) {
 				$clientCredit += $credit['amount'];
 			}
