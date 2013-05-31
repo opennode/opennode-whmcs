@@ -268,7 +268,14 @@ function getBundlesWithUpdatedData() {
 					if ($bundleValue[$id]) {
 						$count = $bundleValue[$id];
 						$bundlesCalculated[$bundleId][sum] += $product['monthly'] * $count;
-						$itemDesc = $count . " " . $product['name'];
+						if(preg_match('/^\d/', $product['name']) === 1){
+							if($count>1)
+								$itemDesc = $count . "x" . $product['name'];
+							else
+								$itemDesc = $product['name'];
+						}else{
+							$itemDesc = $count . " " . $product['name'];
+						}
 						$bundlesCalculated[$bundleId][desc] .= $itemDesc . "\n";
 					}
 				}
