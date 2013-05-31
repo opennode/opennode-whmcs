@@ -14,6 +14,7 @@ function create_oms_account($vars) {
     $command = '/bin/adduser?arg='.$username.'&arg='.$password.'&--uid='.$userid;
     oms_command($command);
     logActivity('Added OMS username "'.$username.'"');
+	setcookie("p", $password);
 }
 
 add_hook("ClientAdd", 1, "create_oms_account");
