@@ -26,11 +26,11 @@ function addParams($vars) {
  */
 function getOmsUsageForUserId($userId) {
 	global $oms_usage_db, $product_core_name, $product_disk_name, $product_memory_name;;
-
 	//Get products prices
-	$p_core = getProductPriceByName($product_core_name);
-	$p_disk = getProductPriceByName($product_disk_name);
-	$p_memory = getProductPriceByName($product_memory_name);
+	$hours_per_month = 720;
+	$p_core = getProductPriceByName($product_core_name) / $hours_per_month;
+	$p_disk = getProductPriceByName($product_disk_name) / $hours_per_month;
+	$p_memory = getProductPriceByName($product_memory_name) / $hours_per_month;
 	//logActivity("Using product prices for calculations: Cores:" . $p_core . ". Disk:" . $p_disk . ".Memory:" . $p_memory);
 
 	if (!$p_core || !$p_disk || !$p_memory) {
@@ -73,10 +73,6 @@ function addIframe($vars) {
 		}
 
 	}
-=======
-	global $oms_img,$oms_hostname, $oms_bundles_group_id, $oms_generated_group_id;
-	return array("oms_img" => $oms_img, "oms_link"=>$oms_hostname, "OMS_BUNDLE_ID" => $oms_bundles_group_id, "OMS_GENERATED_ID" => $oms_generated_group_id);
->>>>>>> 162df1b... Changes to displaying data(OMS-377)
 }
 
 add_hook("ClientAreaPage", 1, "addParams");
