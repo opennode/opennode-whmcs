@@ -68,7 +68,7 @@ function reduce_users_credit() {
 					logActivity("Going to remove credit for user:" . $username . ". Amount: " . $amount . " EUR * " . $hours . " hours");
 					$hoursInMonth = 720;
 					if ($hours > 0) {
-						$isSuccess = removeCreditForUserId($userid, $username, -$amount * $hours / $hoursInMonth, $data['cores'] . " cores. " . $data['disk'] . " GB storage." . $data['memory'] . " GB RAM." . $data['number_of_vms'] . " vms.");
+						$isSuccess = removeCreditForUserId($userid, $username, -$amount * $hours / $hoursInMonth, "OMS_USAGE: " . $data['cores'] . " cores. " . $data['disk'] . " GB storage." . $data['memory'] . " GB RAM." . $data['number_of_vms'] . " vms.");
 						if ($isSuccess) {
 							updateUserCreditReductionRuntime($userid);
 							updateClientCreditBalance($userid);
