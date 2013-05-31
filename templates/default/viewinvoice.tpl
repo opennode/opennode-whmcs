@@ -56,15 +56,6 @@
 <p align="center" class="refunded">{$LANG.invoiceofflinepaid}</p>
 {/if}
 
-{if $manualapplycredit}
-<form method="post" action="{$smarty.server.PHP_SELF}?id={$invoiceid}">
-<input type="hidden" name="applycredit" value="true" />
-<div class="creditbox">
-{$LANG.invoiceaddcreditdesc1} {$totalcredit}. {$LANG.invoiceaddcreditdesc2}<br />
-{$LANG.invoiceaddcreditamount}: <input type="text" name="creditamount" size="10" value="{$creditamount}" /> <input type="submit" value="{$LANG.invoiceaddcreditapply}" />
-</div>
-</form>
-{/if}
 
 <table class="items"><tr><td width="50%">
 
