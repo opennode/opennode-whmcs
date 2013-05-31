@@ -15,7 +15,7 @@ $whmcs_admin_password = "password";
 $whmcs_api_url = "http://localhost/includes/api.php";
 
 $product_core_name="Core";
-$product_disk_name="GB Storage";
+$product_disk_name="10GB Storage";
 $product_memory_name="GB RAM";
 
 $oms_bundles_group_id=4;
