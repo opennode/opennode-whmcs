@@ -19,6 +19,12 @@ function create_new_vm_with_invoice($vars) {
 		logActivity("No username found for id:$userId");
 		return;
 	}
+	//On invoice payment it is needed that credit stays to account. It is automattically removed, manually added:
+	$amount = $invoice['total'];
+	//unused field 'recurringamount'
+	$desc = "Adding credit for invoice:" . $invoiceId;
+	addCreditForUserId($userId, $username, $amount, $desc);
+	updateClientCreditBalance($userId);
 
 	$items = $invoice['items'];
 	foreach ($items as $item) {
@@ -26,12 +32,6 @@ function create_new_vm_with_invoice($vars) {
 		$itemId = $item[0]['relid'];
 		$clientproduct = getClientsProduct($userId, $itemId);
 
-		//On invoice payment it is needed that credit stays to account. It is automattically removed, manually added:
-		$amount = $clientproduct['firstpaymentamount'];
-		//unused field 'recurringamount'
-		$desc = "Adding credit for invoice:" . $invoiceId;
-		addCreditForUserId($userId, $username, $amount, $desc);
-		updateClientCreditBalance($userId);
 		//get template
 		if ($clientproduct['configoptions']) {
 			foreach ($clientproduct['configoptions'] as $configoption) {
