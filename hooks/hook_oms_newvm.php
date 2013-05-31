@@ -70,12 +70,16 @@ function create_new_vm_with_invoice($vars) {
 			$products = getBundlesProductsByOtherProductId($clientproduct['pid']);
 			if ($products) {
 				foreach ($products as $product) {
+					// If name contains number. eg 10GB 
+					preg_match('/^\d*/', $product['name'],$matches);
+					$amount = ($matches[0]) ? $matches[0] : 1;
+
 					if (stristr($product['name'], "core"))
-						$vmData['num_cores'] = $product['count'];
+						$vmData['num_cores'] = $product['count'] * $amount;
 					if (stristr($product['name'], "ram"))
-						$vmData['memory'] = $product['count'];
+						$vmData['memory'] = $product['count'] * $amount;
 					if (stristr($product['name'], "storage"))
-						$vmData['diskspace'] = $product['count'];
+						$vmData['diskspace'] = $product['count'] * $amount;
 
 				}
 				logActivity("VM settings. cores: " . $vmData['num_cores'] . ". memory:" . $vmData['memory'] . ". disk: " . $vmData['diskspace']);
