@@ -50,16 +50,8 @@
     </ul>
 
     <ul class="nav">
-        <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">{$LANG.navservices}&nbsp;<b class="caret"></b></a>
-          <ul class="dropdown-menu">
-            <li><a href="clientarea.php?action=products">{$LANG.clientareanavservices}</a></li>
-            {if $condlinks.pmaddon}<li><a href="index.php?m=project_management">{$LANG.clientareaprojects}</a></li>{/if}
-            <li class="divider"></li>
-            <li><a href="cart.php?gid=5">{$LANG.navservicesorderbundles}</a></li>
-          {* <li><a href="cart.php?gid=addons">{$LANG.clientareaviewaddons}</a></li> *}
-          </ul>
-        </li>
-      </ul>
+        <li><a href="cart.php?gid=5">{$LANG.navservicesorderbundles}</a></li>
+    </ul>
 
 
           {if $condlinks.domainreg || $condlinks.domaintrans}<ul class="nav">
