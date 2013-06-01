@@ -90,11 +90,24 @@ function create_new_vm_with_invoice($vars) {
 					$result = oms_command($command, json_encode($vmData));
 					logActivity($result);
 					$data = json_decode($result);
-					if ($data -> result -> id) {
-						logActivity("Running command Chown for username:" . $username . " and url:" . $data -> result -> url);
-						$command = '/bin/chown?arg=' . $username . '&arg=' . $data -> result -> url ;//. '&asynchronous';
-						$res=oms_command($command);
-						logActivity($res);
+					$id = $data -> result -> id;
+					if ($id) {
+						$urlHangar = $command . "/" . $id;
+						$urlCompute = "/computes/" . $id;
+
+						//Figure out with what url do to chown command
+						if (oms_command($urlCompute, null, "GET") != -1)
+							$urlChowning = $urlCompute;
+						else if (oms_command($urlHangar, null, "GET") != -1)
+							$urlChowning = $urlHangar;
+
+						if ($urlChowning) {
+							logActivity("Running command Chown for username:" . $username . " and url:" . $urlChowning);
+							oms_command('/bin/chown?arg=' . $username . '&arg=' . $urlChowning);
+						} else {
+							logActivity("Error: Chowning failed for username:" . $username . " because 404 for urls:" . $urlHangar . " and " . $urlCompute);
+						}
+
 					} else {
 						logActivity("Error running command Chown for username:" . $username . ". No computeId");
 					}
