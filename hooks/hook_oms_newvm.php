@@ -39,7 +39,7 @@ function create_new_vm_with_invoice($vars) {
 				if ($confopt['option'] == "Template") {
 					//Use value(OMS template name) or find it from mapping variableF
 					if (is_array($oms_templates_mapping) && count($oms_templates_mapping) > 0) {
-						
+
 						$template = $oms_templates_mapping[$confopt['value']];
 						if (!$template) {
 							logActivity("Error: No OMS template found in oms_templates_mapping for value(using it instead):" . $confopt['value']);
@@ -70,8 +70,8 @@ function create_new_vm_with_invoice($vars) {
 			$products = getBundlesProductsByOtherProductId($clientproduct['pid']);
 			if ($products) {
 				foreach ($products as $product) {
-					// If name contains number. eg 10GB 
-					preg_match('/^\d*/', $product['name'],$matches);
+					// If name contains number. eg 10GB
+					preg_match('/^\d*/', $product['name'], $matches);
 					$amount = ($matches[0]) ? $matches[0] : 1;
 
 					if (stristr($product['name'], "core"))
@@ -117,7 +117,13 @@ function create_new_vm_with_invoice($vars) {
 			}
 		}
 	}
-
+	logActivity("Removing orders for userId:" . $userId);
+	$orders = getUsersOrders($userId);
+	if ($orders) {
+		foreach ($orders as $order) {
+			removeUsersOrder($order['id']);
+		}
+	}
 	logActivity("POST-ing new vm data ended.");
 }
 
@@ -220,6 +226,45 @@ function addCreditForUserId($userId, $username, $amount, $desc) {
 	}
 
 	return false;
+}
+
+/**
+ * Functions for removing orders, so flattened products can be removed.
+ */
+function removeUsersOrder($orderId) {
+	$command = "deleteorder";
+	$adminuser = "admin";
+	$values["orderid"] = $orderId;
+
+	$results = localAPI($command, $values, $adminuser);
+	if ($results['result'] == "success") {
+		return true;
+	} else if ($results['result'] == "error") {
+		logActivity("Error removing order. Error:" . $clientData['message']);
+		return false;
+	} else {
+		logActivity("removeUsersOrder: no success or error.");
+	}
+	return false;
+}
+
+function getUsersOrders($userId) {
+	$command = "getorders";
+	$adminuser = "admin";
+	$values["userid"] = $userId;
+	// without this all record are returned
+
+	$results = localAPI($command, $values, $adminuser);
+	if ($results['result'] == "success") {
+		if ($results['orders']['order']) {
+			return $results['orders']['order'];
+		}
+	} else if ($results['result'] == "error") {
+		logActivity("Error getting orders for userId:" . $userId . ". Error:" . $clientData['message']);
+	} else {
+		logActivity("getUsersOrders: no success or error.");
+	}
+	return null;
 }
 
 add_hook("InvoicePaid", 1, "create_new_vm_with_invoice");
