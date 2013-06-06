@@ -20,7 +20,7 @@ function hook_bundleflattening($vars) {
 	}
 
 	$productConfGroupId = createOrUpdateCongfigOptions();
-	// must remove all, because we have no knowlage witch bundles products have been removed
+	// must remove all, because we have no knowledge, which bundle products have been removed
 	deleteProducts($oms_generated_group_id);
 
 	$bundles = getBundlesWithUpdatedData();
