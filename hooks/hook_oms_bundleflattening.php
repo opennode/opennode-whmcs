@@ -20,6 +20,8 @@ function hook_bundleflattening($vars) {
 	}
 
 	$productConfGroupId = createOrUpdateCongfigOptions();
+	// must remove all, because we have no knowledge, which bundle products have been removed
+	deleteProducts($oms_generated_group_id);
 
 	$bundles = getBundlesWithUpdatedData();
 	if (!$bundles)
@@ -140,6 +142,16 @@ function deleteProductCongfigOptionsSub($productConfGroupId) {
 }
 
 /*
+ * Delete all config options for productConfGroupId
+ */
+function deleteProducts($productGroupId) {
+	logActivity("Delete products for gid:" . $productGroupId);
+	$table = "tblproducts";
+	$sql = "DELETE FROM " . $table . " WHERE gid = " . $productGroupId;
+	$query = mysql_query($sql);
+}
+
+/*
  * Create or update product config option subs
  */
 function createOrUpdateProductCongfigOptionsSub($values) {
@@ -178,6 +190,7 @@ function createOrUpdateProductCongfigLinks($productConfGroupId, $productId) {
 
 function createOrUpdateProduct($values) {
 	global $oms_generated_group_id;
+
 	$sql = "SELECT * FROM tblproducts WHERE name = '" . $values[name] . "' and gid=" . $oms_generated_group_id;
 	$query = mysql_query($sql);
 	$product = mysql_fetch_array($query);
@@ -269,12 +282,12 @@ function getBundlesWithUpdatedData() {
 					if ($bundleValue[$id]) {
 						$count = $bundleValue[$id];
 						$bundlesCalculated[$bundleId][sum] += $product['monthly'] * $count;
-						if(preg_match('/^\d/', $product['name']) === 1){
-							if($count>1)
+						if (preg_match('/^\d/', $product['name']) === 1) {
+							if ($count > 1)
 								$itemDesc = $count . "x" . $product['name'];
 							else
 								$itemDesc = $product['name'];
-						}else{
+						} else {
 							$itemDesc = $count . " " . $product['name'];
 						}
 						$bundlesCalculated[$bundleId][desc] .= $itemDesc . "\n";
