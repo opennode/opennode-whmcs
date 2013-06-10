@@ -25,7 +25,8 @@ function addParams($vars) {
  * Function that gets OMC VM data to display on template
  */
 function getOmsUsageForUserId($userId) {
-	global $oms_usage_db, $product_core_name, $product_disk_name, $product_memory_name;;
+	global $oms_usage_db, $product_core_name, $product_disk_name, $product_memory_name;
+
 	//Get products prices
 	$hours_per_month = 720;
 	$p_core = getProductPriceByName($product_core_name) / $hours_per_month;
@@ -50,6 +51,8 @@ function getOmsUsageForUserId($userId) {
 		$data = mysql_fetch_array($result);
 		if ($data) {
 			$id = $data['id'];
+			$mbsInGb = 1024;
+			$data['disk'] = $data['disk'] / $mbsInGb;
 			$amount = $data['cores'] * $p_core + $data['disk'] * $p_disk + $data['memory'] * $p_memory;
 			$data['vm_cost'] = round($amount, 5);
 		}

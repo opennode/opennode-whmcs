@@ -92,7 +92,6 @@ function oms_command($command_path, $data, $req_type) {
 	}
 
 	$res = curl_exec($curl);
-
 	if (!$res) {
 		error_log('Error during OMS call: ' . curl_error($curl));
 		curl_close($curl);
@@ -190,5 +189,4 @@ function getProductPriceByName($name) {
 		logActivity("Error getting product");
 	}
 }
-
 ?>
