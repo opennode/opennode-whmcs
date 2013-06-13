@@ -115,13 +115,13 @@ function create_new_vm_with_invoice($vars) {
 			}
 		}
 	}
-	logActivity("Removing orders for userId:" . $userId);
+	/*logActivity("Removing orders for userId:" . $userId);
 	$orders = getUsersOrders($userId);
 	if ($orders) {
 		foreach ($orders as $order) {
 			removeUsersOrder($order['id']);
 		}
-	}
+	}*/
 	logActivity("POST-ing new vm data ended.");
 }
 
