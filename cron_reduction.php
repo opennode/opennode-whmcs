@@ -64,9 +64,8 @@ function reduce_users_credit() {
 				$lastTimestamp = getUserCreditLastReductionRuntime($userid, $username);
 				if ($lastTimestamp) {
 					$hours = floor((time() - strtotime($lastTimestamp)) / 3600);
-					$mbsInGb = 1024;
-					$data['disk'] = $data['disk'] / $mbsInGb;
-					$amount = $data['cores'] * $p_core + $data['disk'] * $p_disk + $data['memory'] * $p_memory;
+					$disk_item_size = 10;
+					$amount = $data['cores'] * $p_core + $data['disk'] * $p_disk / $disk_item_size + $data['memory'] * $p_memory;
 					logActivity("Going to remove credit for user:" . $username . ". Amount: " . $amount . " EUR * " . $hours . " hours");
 					$hoursInMonth = 720;
 					
@@ -116,17 +115,6 @@ function removeCreditForUserId($userId, $username, $amount, $desc) {
 	return false;
 }
 
-function getProductPriceByName($name) {
-	$sql = "SELECT DISTINCT * FROM tblproducts product JOIN tblpricing price ON product.id = price.relid WHERE price.type='product' AND product.name = '" . $name . "'";
-	$query = mysql_query($sql);
-	$product = mysql_fetch_array($query);
-	if ($product) {
-		$sum = $product['monthly'];
-		return $sum;
-	} else {
-		logActivity("Error getting product");
-	}
-}
 
 function getUserCreditLastReductionRuntime($userId, $username) {
 
