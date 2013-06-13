@@ -92,18 +92,6 @@ function removeCreditForUserId($userId, $username, $amount, $desc) {
 	return false;
 }
 
-function getProductPriceByName($name) {
-	$sql = "SELECT DISTINCT * FROM tblproducts product JOIN tblpricing price ON product.id = price.relid WHERE price.type='product' AND product.name = '" . $name . "'";
-	$query = mysql_query($sql);
-	$product = mysql_fetch_array($query);
-	if ($product) {
-		$sum = $product['monthly'];
-		return $sum;
-	} else {
-		logActivity("Error getting product");
-	}
-}
-
 function getUserCreditLastReductionRuntime($userId, $username) {
 
 	global $oms_usage_db;

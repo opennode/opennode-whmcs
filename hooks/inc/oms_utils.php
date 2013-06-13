@@ -172,4 +172,23 @@ function updateClientCreditBalance($userId) {
 
 	}
 }
+
+/**
+ * Get product item price, if item is 10GB then return 1GB price
+ */
+function getProductPriceByName($name) {
+	$sql = "SELECT DISTINCT * FROM tblproducts product JOIN tblpricing price ON product.id = price.relid WHERE price.type='product' AND product.name = '" . $name . "'";
+	$query = mysql_query($sql);
+	$product = mysql_fetch_array($query);
+	if ($product) {
+		preg_match('/^\d*/', $product['name'], $matches);
+		$amount = ($matches[0]) ? $matches[0] : 1;
+		$sum = $product['monthly'] / $amount;
+		// Calculate one unit price. Can be 10GB disk, need price of 1GB.
+		return $sum;
+	} else {
+		logActivity("Error getting product");
+	}
+}
+
 ?>
