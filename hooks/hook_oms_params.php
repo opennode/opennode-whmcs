@@ -71,8 +71,11 @@ function addIframe($vars) {
 		$userid = $_SESSION[uid];
 		$usernameOms = get_username($userid);
 		if ($userid && $usernameOms) {
-			$oms_iframe_src = $oms_hostname . 'basicauth?username=' . $usernameOms . '&password=' . $pass;
-			return '<iframe name="oms_iframe" src="' . $oms_iframe_src . '" style="display:none"></iframe>';
+			// If ONC is in same domain, then we can login directly
+			oms_auth($usernameOms, $pass);
+			return '';
+			//$oms_iframe_src = $oms_hostname . 'basicauth?username=' . $usernameOms . '&password=' . $pass;
+			//return '<iframe name="oms_iframe" src="' . $oms_iframe_src . '" style="display:none"></iframe>';
 		}
 
 	}
