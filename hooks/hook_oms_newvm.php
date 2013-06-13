@@ -82,9 +82,7 @@ function create_new_vm_with_invoice($vars) {
 						$vmData['diskspace'] = $product['count'] * $amount;
 
 				}
-
 				logActivity("VM settings. cores: " . $vmData['num_cores'] . ". memory:" . $vmData['memory'] . ". disk: " . $vmData['diskspace']);
-
 				if ($vmData['num_cores'] > 0 && $vmData['memory'] > 0 && $vmData['diskspace'] > 0) {
 					logActivity("Running oms command to create VM.");
 
@@ -93,18 +91,22 @@ function create_new_vm_with_invoice($vars) {
 					logActivity($result);
 					$data = json_decode($result);
 					$id = $data -> result -> id;
-
 					if ($id) {
 						$urlHangar = $command . "/" . $id;
-						$urlChowning = $urlHangar;
+						$urlCompute = "/computes/" . $id;
 
-						logActivity("Running command Chown for username:" . $username . " and url:" . $urlChowning);
-						oms_command('/bin/chown?arg=' . $username . '&arg=' . $urlChowning);
+						//Figure out with what url do to chown command
+						if (oms_command($urlCompute, null, "GET") != -1)
+							$urlChowning = $urlCompute;
+						else if (oms_command($urlHangar, null, "GET") != -1)
+							$urlChowning = $urlHangar;
 
-						$urlHangarAllocate = $urlHangar . "/actions/allocate";
-						logActivity("Attempting to allocate " . $urlHangar);
-						$result = oms_command($urlHangarAllocate);
-						logActivity("Allocation of " . $urlHangar . " result: " . $result);
+						if ($urlChowning) {
+							logActivity("Running command Chown for username:" . $username . " and url:" . $urlChowning);
+							oms_command('/bin/chown?arg=' . $username . '&arg=' . $urlChowning);
+						} else {
+							logActivity("Error: Chowning failed for username:" . $username . " because 404 for urls:" . $urlHangar . " and " . $urlCompute);
+						}
 
 					} else {
 						logActivity("Error running command Chown for username:" . $username . ". No computeId");
@@ -115,13 +117,15 @@ function create_new_vm_with_invoice($vars) {
 			}
 		}
 	}
-	/*logActivity("Removing orders for userId:" . $userId);
+/*
+	logActivity("Removing orders for userId:" . $userId);
 	$orders = getUsersOrders($userId);
 	if ($orders) {
 		foreach ($orders as $order) {
 			removeUsersOrder($order['id']);
 		}
-	}*/
+	}
+ */
 	logActivity("POST-ing new vm data ended.");
 }
 
