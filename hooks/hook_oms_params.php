@@ -51,7 +51,7 @@ function getOmsUsageForUserId($userId) {
 		if ($data) {
 			$id = $data['id'];
 			$amount = $data['cores'] * $p_core + $data['disk'] * $p_disk + $data['memory'] * $p_memory;
-			$data['vm_cost'] = $amount;
+			$data['vm_cost'] = round($amount, 5);
 		}
 	}
 	$data['currentcredit'] = getCreditForUserId($userId);
