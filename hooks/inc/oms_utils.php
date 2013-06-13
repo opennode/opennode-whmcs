@@ -100,8 +100,17 @@ function oms_command($command_path, $data, $req_type) {
 	curl_close($curl);
 	return $res;
 }
-
 /**
+	 Authenticate user against OMS server.
+*/
+function oms_auth($username,$password) {
+	$command='auth';
+	$data=array();
+	$data['username']=$username;
+	$data['password']=$password;
+	$result=oms_command($command,json_encode($data));
+}
+	/**
  * Function to call external API
  */
 function callApi($postfields) {
@@ -189,4 +198,5 @@ function getProductPriceByName($name) {
 		logActivity("Error getting product");
 	}
 }
+
 ?>
