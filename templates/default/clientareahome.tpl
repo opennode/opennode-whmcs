@@ -28,8 +28,8 @@
             <p>{$LANG.statscurrentcredit}: <strong>{$omsdata.currentcredit}</strong> {$LANG.eur}</p>
             <p>{$LANG.statsnrofvms}: <strong>{$omsdata.number_of_vms}</strong></p>
             <p>{$LANG.statsnrofcores}: <strong>{$omsdata.cores}</strong></p>
-            <p>{$LANG.statstotalram}: <strong>{$omsdata.memory}</strong> {$LANG.mb}</p>
-            <p>{$LANG.statstotaldisk}: <strong>{$omsdata.disk}</strong> {$LANG.mb}</p>
+            <p>{$LANG.statstotalram}: <strong>{$omsdata.memory}</strong> {$LANG.gb}</p>
+            <p>{$LANG.statstotaldisk}: <strong>{$omsdata.disk}</strong> {$LANG.gb}</p>
             <p>{$LANG.statsinfrprice}: <strong>{$omsdata.vm_cost}</strong> {$LANG.bundleeurperhour}</p>
         </div>
     </div>
