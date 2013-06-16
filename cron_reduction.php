@@ -64,9 +64,10 @@ function reduce_users_credit() {
 				$lastTimestamp = getUserCreditLastReductionRuntime($userid, $username);
 				if ($lastTimestamp) {
 					$hours = floor((time() - strtotime($lastTimestamp)) / 3600);
-					$disk_item_size = 10;
-					$amount = $data['cores'] * $p_core + $data['disk'] * $p_disk / $disk_item_size + $data['memory'] * $p_memory;
-					logActivity("Going to remove credit for user:" . $username . ". Amount: " . $amount . " EUR * " . $hours . " hours");
+					$mbsInGb = 1024;
+					$data['disk'] = $data['disk'] / $mbsInGb;
+					$amount = $data['cores'] * $p_core + $data['disk'] * $p_disk + $data['memory'] * $p_memory;
+					logActivity("Going to remove credit for user:" . $username . ". Amount: " . $amount / $hoursInMonth . " EUR * " . $hours . " hours");
 					$hoursInMonth = 720;
 					
 					if ($hours > 0) {
