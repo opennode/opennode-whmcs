@@ -8,9 +8,9 @@ $_LANG['console'] = "Console";
 
 $_LANG['statscurrentcredit'] = "Current credit";
 $_LANG['statsnrofvms'] = "Number of VMs";
-$_LANG['statsnrofcores'] = "Number of cores";
-$_LANG['statstotalram'] = "Total RAM size";
-$_LANG['statstotaldisk'] = "Total disk size";
+$_LANG['statsnrofcores'] = "Total active CPU cores";
+$_LANG['statstotalram'] = "Total active RAM";
+$_LANG['statstotaldisk'] = "Total allocated disk";
 $_LANG['statsinfrprice'] = "Running cost of the infrastructure";
 $_LANG['mb'] = "MB";
 $_LANG['gb'] = "GB";
