@@ -64,13 +64,14 @@ function reduce_users_credit() {
 				$lastTimestamp = getUserCreditLastReductionRuntime($userid, $username);
 				if ($lastTimestamp) {
 					$hours = floor((time() - strtotime($lastTimestamp)) / 3600);
-					$disk_item_size = 10;
-					$amount = $data['cores'] * $p_core + $data['disk'] * $p_disk / $disk_item_size + $data['memory'] * $p_memory;
-					logActivity("Going to remove credit for user:" . $username . ". Amount: " . $amount . " EUR * " . $hours . " hours");
+					$mbsInGb = 1024;
+					$data['disk'] = $data['disk'] / $mbsInGb;
+					$amount = $data['cores'] * $p_core + $data['disk'] * $p_disk + $data['memory'] * $p_memory;
 					$hoursInMonth = 720;
+					logActivity("Going to remove credit for user:" . $username . ". Amount: " . $amount / $hoursInMonth . " EUR * " . $hours . " hours");
 					
 					if ($hours > 0) {
-						$isSuccess = removeCreditForUserId($userid, $username, -$amount * $hours / $hoursInMonth, "OMS_USAGE: " . $data['cores'] . " cores. " . $data['disk'] . " GB storage." . $data['memory'] . " GB RAM." . $data['number_of_vms'] . " vms.");
+						$isSuccess = removeCreditForUserId($userid, $username, -$amount * $hours / $hoursInMonth, "OMS_USAGE:(".date('H:i:s',strtotime($lastTimestamp)).")[".round($amount, 5)." per month/".(round($amount, 5) * $hours / $hoursInMonth)." for ".$hours." hours] " . $data['cores'] . " cores. " . round($data['disk'], 2) . " GB storage." . $data['memory'] . " GB RAM." . $data['number_of_vms'] . " vms.");
 						if ($isSuccess) {
 							updateUserCreditReductionRuntime($userid);
 							updateClientCreditBalance($userid);
