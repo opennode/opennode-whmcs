@@ -52,7 +52,7 @@ function getOmsUsageForUserId($userId) {
 		if ($data) {
 			$id = $data['id'];
 			$mbsInGb = 1024;
-			$data['disk'] = $data['disk'] / $mbsInGb;
+			$data['disk'] = round($data['disk'] / $mbsInGb, 0);
 			$amount = $data['cores'] * $p_core + $data['disk'] * $p_disk + $data['memory'] * $p_memory;
 			$data['vm_cost'] = round($amount, 5);
 		}
