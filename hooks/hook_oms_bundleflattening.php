@@ -30,7 +30,8 @@ function hook_bundleflattening($vars) {
 
 		$values["type"] = "server";
 		$values["gid"] = $oms_generated_group_id;
-		$values["name"] = $bundle[name];
+        $values["name"] = $bundle[name];
+        $values["tax"] = 1;
 		$values["description"] = $bundle[description];
 		$values["order"] = $bundle["sortorder"];
 		$values["paytype"] = "onetime";
