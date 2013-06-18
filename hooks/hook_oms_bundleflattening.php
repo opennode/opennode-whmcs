@@ -9,20 +9,20 @@ include_once (dirname(__FILE__) . '/inc/oms_utils.php');
  * Main function that updates/created congig group, config options and suboptions based on oms templates query.
  * And creates/updates products based on bundles group.
  */
-function flatten_bundle($serviceid) {
+function hook_bundleflattening($vars) {
 	global $oms_generated_group_id;
-
-	//FOR MANUAL RUN
-	/*if ($_SESSION['uid'] == 13)//Logged in user UID
-		print_r("Flattening bundles");
-	else
-		return;*/
 
 	if (!$oms_generated_group_id) {
 		logActivity("Error: No $oms_generated_group_id defined.");
 		return;
+	} else {
+		logActivity("Flattening bundles to: $oms_generated_group_id ");
 	}
+
 	$productConfGroupId = createOrUpdateCongfigOptions();
+	// must remove all, because we have no knowledge, which bundle products have been removed
+	deleteProducts($oms_generated_group_id);
+
 	$bundles = getBundlesWithUpdatedData();
 	if (!$bundles)
 		return;
@@ -32,6 +32,7 @@ function flatten_bundle($serviceid) {
 		$values["gid"] = $oms_generated_group_id;
 		$values["name"] = $bundle[name];
 		$values["description"] = $bundle[description];
+		$values["order"] = $bundle["sortorder"];
 		$values["paytype"] = "onetime";
 		$values["pricing"][1] = array("monthly" => $bundle[displayprice]);
 		$productId = createOrUpdateProduct($values);
@@ -42,6 +43,9 @@ function flatten_bundle($serviceid) {
 function createOrUpdateCongfigOptions() {
 	$productConfGroupId = createOrUpdateProductCongfigGroup();
 	$productConfOptionId = createOrUpdateProductCongfigOptions($productConfGroupId);
+
+	//lets remove all templates before updating
+	deleteProductCongfigOptionsSub($productConfOptionId);
 	updateTemplates($productConfOptionId);
 	return $productConfGroupId;
 }
@@ -93,22 +97,63 @@ function createOrUpdateProductCongfigOptions($productConfGroupId) {
 	return $productConfOptionId;
 }
 
+/**
+ * Update templates from OMS or from oms_templates array
+ */
 function updateTemplates($productConfOptionId) {
-	logActivity("Quering templates from oms.");
-	$command = '/templates?depth=1&attrs=name&exclude=actions';
-	$result = oms_command($command, null, "GET");
-	$arr[name] = "val";
-	$data = json_decode($result);
-	foreach ($data->children as $template) {
-		$values[configid] = $productConfOptionId;
-		$values[optionname] = $template -> name;
-		$values[sortorder] = 1;
-		$values[hidden] = 0;
-		createOrUpdateProductCongfigOptionsSub($values);
-	}
+	global $oms_templates;
 
+	if (is_array($oms_templates) && count($oms_templates) > 0) {
+		logActivity("Building templates from array oms_templates.");
+		$i = 0;
+		foreach ($oms_templates as $template) {
+			$values[configid] = $productConfOptionId;
+			$values[optionname] = $template;
+			$values[sortorder] = $i;
+			$values[hidden] = 0;
+			createOrUpdateProductCongfigOptionsSub($values);
+			$i++;
+		}
+	} else {
+		logActivity("Quering templates from oms.");
+		$command = '/templates?depth=1&attrs=name&exclude=actions';
+		$result = oms_command($command, null, "GET");
+		$i = 0;
+		$data = json_decode($result);
+		foreach ($data->children as $template) {
+			$values[configid] = $productConfOptionId;
+			$values[optionname] = $template -> name;
+			$values[sortorder] = $i;
+			$values[hidden] = 0;
+			createOrUpdateProductCongfigOptionsSub($values);
+			$i++;
+		}
+	}
 }
 
+/*
+ * Delete all config options for productConfGroupId
+ */
+function deleteProductCongfigOptionsSub($productConfGroupId) {
+	logActivity("Delete configOptionSub for configid:" . $productConfGroupId);
+	$table = "tblproductconfigoptionssub";
+	$sql = "DELETE FROM " . $table . " WHERE configid = " . $productConfGroupId;
+	$query = mysql_query($sql);
+}
+
+/*
+ * Delete all config options for productConfGroupId
+ */
+function deleteProducts($productGroupId) {
+	logActivity("Delete products for gid:" . $productGroupId);
+	$table = "tblproducts";
+	$sql = "DELETE FROM " . $table . " WHERE gid = " . $productGroupId;
+	$query = mysql_query($sql);
+}
+
+/*
+ * Create or update product config option subs
+ */
 function createOrUpdateProductCongfigOptionsSub($values) {
 	$table = "tblproductconfigoptionssub";
 	$sql = "SELECT * FROM " . $table . " WHERE optionname = '" . $values[optionname] . "'";
@@ -145,6 +190,7 @@ function createOrUpdateProductCongfigLinks($productConfGroupId, $productId) {
 
 function createOrUpdateProduct($values) {
 	global $oms_generated_group_id;
+
 	$sql = "SELECT * FROM tblproducts WHERE name = '" . $values[name] . "' and gid=" . $oms_generated_group_id;
 	$query = mysql_query($sql);
 	$product = mysql_fetch_array($query);
@@ -158,7 +204,7 @@ function createOrUpdateProduct($values) {
 		$table = "tblproducts";
 		$where = array("id" => $product[id]);
 		update_query($table, $values, $where);
-		
+
 		//update product prices
 		$table = "tblpricing";
 		$where = array("relid" => $product[id]);
@@ -236,7 +282,14 @@ function getBundlesWithUpdatedData() {
 					if ($bundleValue[$id]) {
 						$count = $bundleValue[$id];
 						$bundlesCalculated[$bundleId][sum] += $product['monthly'] * $count;
-						$itemDesc = $count . " ". $product['name'];
+						if (preg_match('/^\d/', $product['name']) === 1) {
+							if ($count > 1)
+								$itemDesc = $count . "x" . $product['name'];
+							else
+								$itemDesc = $product['name'];
+						} else {
+							$itemDesc = $count . " " . $product['name'];
+						}
 						$bundlesCalculated[$bundleId][desc] .= $itemDesc . "\n";
 					}
 				}
@@ -263,8 +316,5 @@ function getBundlesWithUpdatedData() {
 	return null;
 }
 
-add_hook("AdminServiceEdit", 0, "flatten_bundle");
-
-// FOR MANUAL RUN
-//add_hook("ClientAreaPage", 1, "flatten_bundle");
+add_hook("ProductEdit", 1, "hook_bundleflattening");
 ?>

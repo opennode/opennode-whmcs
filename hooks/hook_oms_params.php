@@ -25,12 +25,13 @@ function addParams($vars) {
  * Function that gets OMC VM data to display on template
  */
 function getOmsUsageForUserId($userId) {
-	global $oms_usage_db, $product_core_name, $product_disk_name, $product_memory_name;;
+	global $oms_usage_db, $product_core_name, $product_disk_name, $product_memory_name;
 
 	//Get products prices
-	$p_core = getProductPriceByName($product_core_name);
-	$p_disk = getProductPriceByName($product_disk_name);
-	$p_memory = getProductPriceByName($product_memory_name);
+	$hours_per_month = 720;
+	$p_core = getProductPriceByName($product_core_name) / $hours_per_month;
+	$p_disk = getProductPriceByName($product_disk_name) / $hours_per_month;
+	$p_memory = getProductPriceByName($product_memory_name) / $hours_per_month;
 	//logActivity("Using product prices for calculations: Cores:" . $p_core . ". Disk:" . $p_disk . ".Memory:" . $p_memory);
 
 	if (!$p_core || !$p_disk || !$p_memory) {
@@ -50,8 +51,10 @@ function getOmsUsageForUserId($userId) {
 		$data = mysql_fetch_array($result);
 		if ($data) {
 			$id = $data['id'];
+			$mbsInGb = 1024;
+			$data['disk'] = round($data['disk'] / $mbsInGb, 0);
 			$amount = $data['cores'] * $p_core + $data['disk'] * $p_disk + $data['memory'] * $p_memory;
-			$data['vm_cost'] = $amount;
+			$data['vm_cost'] = round($amount, 5);
 		}
 	}
 	$data['currentcredit'] = getCreditForUserId($userId);
@@ -68,15 +71,14 @@ function addIframe($vars) {
 		$userid = $_SESSION[uid];
 		$usernameOms = get_username($userid);
 		if ($userid && $usernameOms) {
+			// If ONC is in same domain, then we can login directly
+			//oms_auth($usernameOms, $pass);
+			//return '';
 			$oms_iframe_src = $oms_hostname . 'basicauth?username=' . $usernameOms . '&password=' . $pass;
 			return '<iframe name="oms_iframe" src="' . $oms_iframe_src . '" style="display:none"></iframe>';
 		}
 
 	}
-=======
-	global $oms_img,$oms_hostname, $oms_bundles_group_id, $oms_generated_group_id;
-	return array("oms_img" => $oms_img, "oms_link"=>$oms_hostname, "OMS_BUNDLE_ID" => $oms_bundles_group_id, "OMS_GENERATED_ID" => $oms_generated_group_id);
->>>>>>> 162df1b... Changes to displaying data(OMS-377)
 }
 
 add_hook("ClientAreaPage", 1, "addParams");

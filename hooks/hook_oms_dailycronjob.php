@@ -12,7 +12,7 @@ function stop_users_vms() {
 	$fields = "*";
 	$result = select_query($table, $fields);
 
-		if ($result) {
+	if ($result) {
 		while ($data = mysql_fetch_array($result)) {
 			$userid = $data['id'];
 			$username = get_username($userid);
@@ -23,7 +23,7 @@ function stop_users_vms() {
 
 				logActivity("Setting balance limit for user: " . $username . ". balanceLimit:" . $balanceLimit);
 
-				if (getCreditForUserId($userid) < $balanceLimit) {
+				if (getCreditForUserId($userid) + $balanceLimit < 0) {
 					logActivity("Stopping vms for user: " . $username);
 
 					$command = '/bin/stopvms?arg=-u&arg=' . $username . '&asynchronous';
@@ -56,7 +56,7 @@ function getCreditForUserId($userId) {
 			}
 		}
 	}
-	
+
 	return $clientCredit;
 }
 
