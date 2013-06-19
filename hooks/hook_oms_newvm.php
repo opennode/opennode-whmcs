@@ -20,7 +20,7 @@ function create_new_vm_with_invoice($vars) {
 		return;
 	}
 	//On invoice payment it is needed that credit stays to account. It is automattically removed, manually added:
-	$amount = $invoice['total'];
+	$amountPaid = $invoice['total'];
 	
 	$boughtVmProduct = false;// To add credit only when client buys vm product, not adds funds.
 	$items = $invoice['items'];
@@ -116,7 +116,7 @@ function create_new_vm_with_invoice($vars) {
 
 	if($boughtVmProduct){
 		$desc = "Adding credit for invoice:" . $invoiceId;
-		addCreditForUserId($userId, $username, $amount, $desc);
+		addCreditForUserId($userId, $username, $amountPaid, $desc);
 		updateClientCreditBalance($userId);
 	}
 	/*logActivity("Removing orders for userId:" . $userId);
