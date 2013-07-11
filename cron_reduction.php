@@ -23,9 +23,8 @@ function logActivity($msg) {
 	callApi($postfields);
 }
 
-
 function reduce_users_credit() {
-	global $oms_usage_db, $product_core_name, $product_disk_name, $product_memory_name;
+	global $product_core_name, $product_disk_name, $product_memory_name;
 
 	logActivity("Starting clients credit reduction CRON job.");
 
@@ -41,55 +40,103 @@ function reduce_users_credit() {
 		logActivity("Using product prices for calculations: Cores:" . $p_core . ". Disk:" . $p_disk . ".Memory:" . $p_memory);
 	}
 
-	$table = $oms_usage_db . ".CONF_CHANGES";
-
-	$sql = "select conf.id, conf.username, conf.timestamp, conf.cores, conf.disk, conf.memory, conf.number_of_vms
-				from " . $table . " as conf
-					inner join
-				(select username, max(timestamp) as ts
-					from " . $table . " where timestamp <= DATE_SUB(now(), INTERVAL 1 HOUR)
-				group by username) maxconf
-					on (conf.username = maxconf.username and conf.timestamp = maxconf.ts)
-					GROUP BY conf.username";
-	// GROUP BY is here in case there is two rows with same timestamp for username(e.g testdata)
-
-	$result = mysql_query($sql);
+	$result = queryForConfChanges();
 	if ($result) {
-		while ($data = mysql_fetch_array($result)) {
-			$id = $data['id'];
-			$username = $data['username'];
-			$userid = get_userid($username);
-			if ($userid) {
-				$lastTimestamp = getUserCreditLastReductionRuntime($userid, $username);
-				if ($lastTimestamp) {
-					$hours = floor((time() - strtotime($lastTimestamp)) / 3600);
-					$mbsInGb = 1024;
-					$data['disk'] = $data['disk'] / $mbsInGb;
-					$amount = $data['cores'] * $p_core + $data['disk'] * $p_disk + $data['memory'] * $p_memory;
-					$hoursInMonth = 720;
-					error_log("Last timestamp for " . $username . ":" . $lastTimestamp . ".");	
-					if ($hours > 0) {
-						error_log("Time since the last reduction is >1h, proceeding");
-						logActivity("Going to remove credit for user:" . $username . ". Amount: " . $amount / $hoursInMonth . " EUR * " . $hours . " hours");
-						$isSuccess = removeCreditForUserId($userid, $username, -$amount * $hours / $hoursInMonth, "OMS_USAGE:(".date('H:i:s',strtotime($lastTimestamp)).")[".round($amount, 5)." per month/".(round($amount, 5) * $hours / $hoursInMonth)." for ".$hours." hours] " . $data['cores'] . " cores. " . round($data['disk'], 2) . " GB storage." . $data['memory'] . " GB RAM." . $data['number_of_vms'] . " vms.");
-						if ($isSuccess) {
-							updateUserCreditReductionRuntime($userid);
-							updateClientCreditBalance($userid);
-						} else {
-							logActivity("Error: Credit reduction error for user:" . $username . ".");
-						}
-					}
-					
+		$usersAmountsToRemove = array();
+		$recordIdsToUpdate = array();
+
+		$mbsInGb = 1024;
+		$hoursInMonth = 720;
+		$prevRecord = null;
+		foreach ($result as $currRecord) {
+			if ($prevRecord) {
+				if ($prevRecord['username'] == $currRecord['username']) {
+					$username = $prevRecord['username'];
+					$hoursInBetween = (strtotime($currRecord['timestamp']) - strtotime($prevRecord['timestamp'])) / 3600;
+
+					$prevRecord['disk'] = $prevRecord['disk'] / $mbsInGb;
+					$amount = $prevRecord['cores'] * $p_core + $prevRecord['disk'] * $p_disk + $prevRecord['memory'] * $p_memory;
+
+					$addAmountToUser = $amount * $hoursInBetween / $hoursInMonth;
+					if (!isset($usersAmountsToRemove[$username]))
+						$usersAmountsToRemove[$username] = 0;
+
+					$usersAmountsToRemove[$username] += $addAmountToUser;
+					$recordIdsToUpdate[] = $prevRecord['id'];
+					//error_log("Adding " . $addAmountToUser . " EUR to user :" . $username . " for " . $hoursInBetween . " hours.");
 				} else {
-					error_log("No lastTimestamp found for user:" . $username . ".");
+					error_log("Switching users:" . $prevRecord['username'] . "->" . $currRecord['username']);
 				}
-			} else {
-				error_log("Userid not found for username " . $username);
 			}
+
+			$prevRecord = $currRecord;
 		}
+		applyCreditRemovingFromUsersAmounts($usersAmountsToRemove);
+		updateRecordIds($recordIdsToUpdate);
 	}
 
 	logActivity("Client credit reduction CRON job ended.");
+}
+/**
+ * Query for conf changes
+ * Return array
+ */
+function queryForConfChanges() {
+	global $oms_usage_db;
+
+	$table = $oms_usage_db . ".CONF_CHANGES";
+
+	$sql = "select conf.id, conf.username, conf.timestamp, conf.cores, conf.disk, conf.memory, conf.number_of_vms from 
+			" . $table . " as conf 
+			where conf.processed = false 
+			AND conf.cores > 0 
+			AND conf.disk > 0 
+			AND conf.memory > 0 
+			AND conf.number_of_vms > 0 
+			AND timestamp <= DATE_SUB(now(), INTERVAL 1 HOUR) 
+			ORDER BY conf.username, conf.timestamp";
+
+	$result = mysql_query($sql);
+
+	$resultsAsArray = array();
+	while ($row = mysql_fetch_assoc($result)) {
+
+		$resultsAsArray[] = $row;
+	}
+	return $resultsAsArray;
+}
+
+function updateRecordIds($recordIdsToUpdate) {
+	global $oms_usage_db;
+	$table = $oms_usage_db . ".CONF_CHANGES";
+	if (count($recordIdsToUpdate) > 0) {
+		$sql = "UPDATE " . $table . " SET processed=true WHERE id IN(" . implode(',', $recordIdsToUpdate) . ')';
+		$result = mysql_query($sql);
+		if ($result) {
+			error_log("Successfully updated " . $table . " with ids:" . implode(',', $recordIdsToUpdate));
+		} else {
+			error_log("Error updating " . $table);
+		}
+	}
+}
+
+function applyCreditRemovingFromUsersAmounts($usersAmountsToRemove) {
+	foreach ($usersAmountsToRemove as $username => $amountToRemove) {
+		$userid = get_userid($username);
+		if ($userid) {
+			error_log("Username:" . $username . " To remove:" . $amountToRemove);
+			logActivity("Going to remove credit for user:" . $username . ". Amount: " . $amountToRemove . " EUR ");
+			$isSuccess = removeCreditForUserId($userid, $username, -$amountToRemove, "OMS_USAGE:(" . date('H:i:s', time()) . ")[removed:" . round($amountToRemove, 5) . " EUR] ");
+			if ($isSuccess) {
+				updateUserCreditReductionRuntime($userid);
+				updateClientCreditBalance($userid);
+			} else {
+				logActivity("Error: Credit reduction error for user:" . $username . ".");
+			}
+		} else {
+			error_log("Userid not found for username " . $username);
+		}
+	}
 }
 
 function removeCreditForUserId($userId, $username, $amount, $desc) {
@@ -115,7 +162,6 @@ function removeCreditForUserId($userId, $username, $amount, $desc) {
 
 	return false;
 }
-
 
 function getUserCreditLastReductionRuntime($userId, $username) {
 
@@ -152,7 +198,6 @@ function updateUserCreditReductionRuntime($userId) {
 	}
 	return $retval;
 }
-
 
 reduce_users_credit();
 ?>
