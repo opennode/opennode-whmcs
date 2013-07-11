@@ -54,7 +54,6 @@ function reduce_users_credit() {
 	// GROUP BY is here in case there is two rows with same timestamp for username(e.g testdata)
 
 	$result = mysql_query($sql);
-
 	if ($result) {
 		while ($data = mysql_fetch_array($result)) {
 			$id = $data['id'];
@@ -68,9 +67,10 @@ function reduce_users_credit() {
 					$data['disk'] = $data['disk'] / $mbsInGb;
 					$amount = $data['cores'] * $p_core + $data['disk'] * $p_disk + $data['memory'] * $p_memory;
 					$hoursInMonth = 720;
-					logActivity("Going to remove credit for user:" . $username . ". Amount: " . $amount / $hoursInMonth . " EUR * " . $hours . " hours");
-					
+					error_log("Last timestamp for " . $username . ":" . $lastTimestamp . ".");	
 					if ($hours > 0) {
+						error_log("Time since the last reduction is >1h, proceeding");
+						logActivity("Going to remove credit for user:" . $username . ". Amount: " . $amount / $hoursInMonth . " EUR * " . $hours . " hours");
 						$isSuccess = removeCreditForUserId($userid, $username, -$amount * $hours / $hoursInMonth, "OMS_USAGE:(".date('H:i:s',strtotime($lastTimestamp)).")[".round($amount, 5)." per month/".(round($amount, 5) * $hours / $hoursInMonth)." for ".$hours." hours] " . $data['cores'] . " cores. " . round($data['disk'], 2) . " GB storage." . $data['memory'] . " GB RAM." . $data['number_of_vms'] . " vms.");
 						if ($isSuccess) {
 							updateUserCreditReductionRuntime($userid);
@@ -125,6 +125,7 @@ function getUserCreditLastReductionRuntime($userId, $username) {
 	$query = mysql_query($sql);
 	$result = mysql_fetch_array($query);
 	if ($result['timestamp']) {
+		error_log("== Last timestamp for " . $username . ": " . $result['timestamp']);
 		return $result['timestamp'];
 	} else {
 		// If script is run for first time for user, then timestamp must come from conf_changes table
@@ -133,7 +134,7 @@ function getUserCreditLastReductionRuntime($userId, $username) {
 		$query = mysql_query($sql);
 		$result = mysql_fetch_array($query);
 		if ($result) {
-			return $result[timestamp];
+			return $result['timestamp'];
 		} else {
 			error_log("No result from CREDIT_REDUCTION or CONF_CHANGES for userid: " . $userId);
 		}
