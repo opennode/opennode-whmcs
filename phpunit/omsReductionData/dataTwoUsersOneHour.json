@@ -1,0 +1,42 @@
+{
+	"input": [
+		{
+			"id": 1,
+			"username": "test1",
+			"timestamp": "2013-07-11 00:00:00",
+			"cores": 1,
+			"disk": 1024,
+			"memory": 1,
+			"number_of_vms": 1
+		}, {
+			"id": 2,
+			"username": "test1",
+			"timestamp": "2013-07-11 01:00:00",
+			"cores": 1,
+			"disk": 1024,
+			"memory": 1,
+			"number_of_vms": 1
+		}, {
+			"id": 3,
+			"username": "test2",
+			"timestamp": "2013-07-11 00:00:00",
+			"cores": 1,
+			"disk": 1024,
+			"memory": 1,
+			"number_of_vms": 1
+		}, {
+			"id": 4,
+			"username": "test2",
+			"timestamp": "2013-07-11 01:00:00",
+			"cores": 1,
+			"disk": 1024,
+			"memory": 1,
+			"number_of_vms": 1
+		}
+	],
+	"usersAmountsToRemove": {
+		"test1": 0.0405555555555556,
+		"test2": 0.0405555555555556
+	},
+	"recordIdsToUpdate": [1,3]
+}

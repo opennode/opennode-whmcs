@@ -1,0 +1,124 @@
+{
+	"input": [
+		{
+			"id": 1,
+			"username": "test_____1",
+			"timestamp": "2013-07-11 00:00:00",
+			"cores": 1,
+			"disk": 1024,
+			"memory": 1,
+			"number_of_vms": 1
+		}, {
+			"id": 2,
+			"username": "test_____1",
+			"timestamp": "2013-07-11 02:00:00",
+			"cores": 1,
+			"disk": 1024,
+			"memory": 1,
+			"number_of_vms": 1
+		}
+		, {
+			"id": 3,
+			"username": "test_____1",
+			"timestamp": "2013-07-11 03:00:00",
+			"cores": 1,
+			"disk": 1024,
+			"memory": 1,
+			"number_of_vms": 1
+		}
+		, {
+			"id": 4,
+			"username": "test_____1",
+			"timestamp": "2013-07-11 05:00:00",
+			"cores": 1,
+			"disk": 1024,
+			"memory": 1,
+			"number_of_vms": 1
+		}
+		, {
+			"id": 5,
+			"username": "test_____1",
+			"timestamp": "2013-07-11 07:00:00",
+			"cores": 1,
+			"disk": 1024,
+			"memory": 1,
+			"number_of_vms": 1
+		}
+		, {
+			"id": 6,
+			"username": "test_____1",
+			"timestamp": "2013-07-11 08:00:00",
+			"cores": 1,
+			"disk": 1024,
+			"memory": 1,
+			"number_of_vms": 1
+		}
+		, {
+			"id": 7,
+			"username": "test_____1",
+			"timestamp": "2013-07-11 09:00:00",
+			"cores": 1,
+			"disk": 1024,
+			"memory": 1,
+			"number_of_vms": 1
+		}
+		, {
+			"id": 8,
+			"username": "test_____1",
+			"timestamp": "2013-07-11 15:00:00",
+			"cores": 1,
+			"disk": 1024,
+			"memory": 1,
+			"number_of_vms": 1
+		}
+		, {
+			"id": 9,
+			"username": "test_____1",
+			"timestamp": "2013-07-11 17:00:00",
+			"cores": 1,
+			"disk": 1024,
+			"memory": 1,
+			"number_of_vms": 1
+		}
+		, {
+			"id": 10,
+			"username": "test_____1",
+			"timestamp": "2013-07-11 18:00:00",
+			"cores": 1,
+			"disk": 1024,
+			"memory": 1,
+			"number_of_vms": 1
+		}
+		, {
+			"id": 11,
+			"username": "test_____1",
+			"timestamp": "2013-07-11 21:21:21",
+			"cores": 1,
+			"disk": 1024,
+			"memory": 1,
+			"number_of_vms": 1
+		}
+		, {
+			"id": 12,
+			"username": "test_____1",
+			"timestamp": "2013-07-11 23:00:00",
+			"cores": 1,
+			"disk": 1024,
+			"memory": 1,
+			"number_of_vms": 1
+		}
+		, {
+			"id": 13,
+			"username": "test_____1",
+			"timestamp": "2013-07-12 00:00:00",
+			"cores": 1,
+			"disk": 1024,
+			"memory": 1,
+			"number_of_vms": 1
+		}
+	],
+	"usersAmountsToRemove": {
+		"test_____1": 0.9733333333333344
+	},
+	"recordIdsToUpdate": [1,2,3,4,5,6,7,8,9,10,11,12]
+}
