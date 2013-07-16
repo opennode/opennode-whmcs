@@ -92,6 +92,7 @@ function oms_command($command_path, $data, $req_type) {
 	}
 
 	$res = curl_exec($curl);
+
 	if (!$res) {
 		error_log('Error during OMS call: ' . curl_error($curl));
 		curl_close($curl);
@@ -152,7 +153,7 @@ function callApi($postfields) {
  * Updates client credit with external api, internal did not work.
  */
 function updateClientCreditBalance($userId) {
-	logActivity("Updating client $userId");
+	logActivityGlobal("Updating client $userId");
 	$clientCredit = 0;
 	$postfields["action"] = "getcredits";
 	$postfields["clientid"] = $userId;
@@ -167,15 +168,15 @@ function updateClientCreditBalance($userId) {
 				$clientCredit += $credit['amount'];
 			}
 		}
-		logActivity("Updating client $userId with credit: $clientCredit");
+		logActivityGlobal("Updating client $userId with credit: $clientCredit");
 		$postfields["action"] = "updateclient";
 		$postfields["clientid"] = $userId;
 		$postfields["credit"] = $clientCredit;
 		$results = callAPI($postfields);
 		if ($clientData['result'] == "success") {
-			logActivity("Successfully updated client credit.");
+			logActivityGlobal("Successfully updated client credit.");
 		} else {
-			logActivity("Error updating client credit.");
+			logActivityGlobal("Error updating client credit.");
 		}
 
 	}
@@ -195,8 +196,14 @@ function getProductPriceByName($name) {
 		// Calculate one unit price. Can be 10GB disk, need price of 1GB.
 		return $sum;
 	} else {
-		logActivity("Error getting product");
+		logActivityGlobal("Error getting product");
 	}
+}
+function logActivityGlobal($msg) {
+        $postfields["action"] = "logactivity";
+        $postfields["description"] = $msg;
+        callApi($postfields);
+        error_log($msg);
 }
 
 ?>

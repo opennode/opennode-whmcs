@@ -94,10 +94,6 @@ class OmsReduction {
         $sql = "select conf.id, conf.username, conf.timestamp, conf.cores, conf.disk, conf.memory, conf.number_of_vms from 
 			" . $table . " as conf 
 			where conf.processed = false 
-			AND conf.cores > 0 
-			AND conf.disk > 0 
-			AND conf.memory > 0 
-			AND conf.number_of_vms > 0 
 			AND timestamp <= DATE_SUB(now(), INTERVAL 1 HOUR) 
 			ORDER BY conf.username, conf.timestamp";
 
