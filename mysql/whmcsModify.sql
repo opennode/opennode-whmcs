@@ -1,0 +1,1 @@
+ALTER TABLE tblcredit MODIFY amount decimal(13,5) NOT NULL;

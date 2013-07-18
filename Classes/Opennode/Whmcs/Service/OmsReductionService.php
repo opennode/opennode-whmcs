@@ -123,13 +123,7 @@ class OmsReductionService {
             $userid = $this -> whmcsDbService -> getUserid($username);
             if ($userid) {
                 $this -> whmcsExternalService -> logActivity("Going to remove credit for user:" . $username . ". Amount: " . $amountToRemove . " EUR ");
-                $isSuccess = $this -> whmcsExternalService -> removeCreditForUserId($userid, $username, -$amountToRemove, "OMS_USAGE:(" . date('H:i:s', time()) . ")[removed:" . round($amountToRemove, 5) . " EUR] ");
-                if ($isSuccess) {
-                    //$this -> updateUserCreditReductionRuntime($userid);
-                    $this -> whmcsExternalService -> updateClientCreditBalance($userid);
-                } else {
-                    $this -> whmcsExternalService -> logActivity("Error: Credit reduction error for user:" . $username . ".");
-                }
+                $this -> whmcsDbService -> removeCreditFromClient($userid, $username, -$amountToRemove, "OMS_USAGE:(" . date('H:i:s', time()) . ")[removed:" . round($amountToRemove, 5) . " EUR] ");
             } else {
                 $this -> whmcsExternalService -> logActivity("Userid not found for username " . $username);
             }

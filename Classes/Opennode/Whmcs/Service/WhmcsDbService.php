@@ -7,6 +7,10 @@ class WhmcsDbService {
 
     }
 
+    public function logActivity($msg) {
+        error_log($msg);
+    }
+
     /**
      * Get product item price, if item is 10GB then return 1GB price
      */
@@ -35,6 +39,48 @@ class WhmcsDbService {
         $useridfield = mysql_fetch_row($result);
         $userid = $useridfield[0];
         return $userid;
+    }
+
+    /**
+     * Removes credit
+     */
+    public function removeCreditFromClient($clientId, $username, $amount, $desc) {
+        if ($amount > 0) {
+            $this -> logActivity("Error. Tried to ADD credit to userId:" . $clientId);
+            return;
+        }
+        if (is_numeric($amount) && $amount < 0) {
+            $this -> addCredit($clientId, $username, $amount, $desc);
+            $this -> updateCreditSum($clientId);
+        }
+    }
+
+    /**
+     * Updates clients credit sum based on credit rows
+     */
+    public function updateCreditSum($clientId) {
+        if (is_numeric($clientId)) {
+            $result = mysql_query("UPDATE tblclients as cl SET cl.credit=(SELECT sum(amount) FROM  tblcredit as cr WHERE cr.clientid=cl.id) WHERE cl.id=" . $clientId);
+        } else {
+            error_log("Wrong clientId:" . $clientId);
+        }
+    }
+
+    /**
+     * Adds credit record directly to db.
+     */
+    private function addCredit($clientId, $username, $amount, $desc) {
+
+        $this -> logActivity("Adding credit row for client: " . $clientId);
+        $table = "tblcredit";
+
+        $sql = "INSERT INTO " . $table . " (clientid, date, amount, description) VALUES (" . $clientId . ", CURDATE() ,'" . $amount . "','" . $desc . "' )";
+        $retval = mysql_query($sql);
+        if (!$retval) {
+            $this -> logActivity("addCredit error for userid: " . $clientId);
+        }
+        return $retval;
+
     }
 
 }

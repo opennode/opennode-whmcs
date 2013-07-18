@@ -24,6 +24,7 @@ class WhmcsExternalService implements WhmcsExternalServiceInterface {
      * Updates client credit with external api, internal did not work.
      */
     function updateClientCreditBalance($userId) {
+    	
         $this -> logActivity("Updating client $userId");
         $clientCredit = 0;
         $postfields["action"] = "getcredits";
@@ -103,6 +104,7 @@ class WhmcsExternalService implements WhmcsExternalServiceInterface {
      * Function to remove credit from user
      */
     function removeCreditForUserId($userId, $username, $amount, $desc) {
+    	error_log("Depreached: WHMCS rounds users credit.");
         if ($amount > 0) {
             $this -> logActivity("Error. Tried to ADD credit to userId:" . $userId);
             return;
