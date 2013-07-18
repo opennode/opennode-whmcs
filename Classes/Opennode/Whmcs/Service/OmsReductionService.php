@@ -1,50 +1,47 @@
 <?php
-namespace Opennode\Whmcs\Oms;
-include_once ('includes/hooks/inc/oms_utils.php');
+namespace Opennode\Whmcs\Service;
 
-class OmsReduction {
+class OmsReductionService {
     private $product_core_name;
     private $product_disk_name;
     private $product_memory_name;
     private $oms_usage_db;
+    private $whmcsExternalService;
+    private $whmcsDbService;
 
-    public function __construct($product_core_name, $product_disk_name, $product_memory_name, $oms_usage_db) {
+    public function __construct($product_core_name, $product_disk_name, $product_memory_name, $oms_usage_db, $whmcsExternalService, $whmcsDbService) {
         $this -> product_core_name = $product_core_name;
         $this -> product_disk_name = $product_disk_name;
         $this -> product_memory_name = $product_memory_name;
         $this -> oms_usage_db = $oms_usage_db;
+        $this -> whmcsExternalService = $whmcsExternalService;
+        $this -> whmcsDbService = $whmcsDbService;
         date_default_timezone_set('Europe/Helsinki');
     }
 
-    public function logActivity($msg) {
-        $postfields["action"] = "logactivity";
-        $postfields["description"] = $msg;
-        callApi($postfields);
-        error_log($msg);
-    }
-
     public function reduce_users_credit() {
-        $this -> logActivity("Starting clients credit reduction CRON job.");
+        $this -> whmcsExternalService -> logActivity("Starting clients credit reduction CRON job.");
         $result = $this -> queryForConfChanges();
         $parsedResult = $this -> parseLegacyArrayForData($result);
 
         $this -> applyCreditRemovingFromUsersAmounts($parsedResult['usersAmountsToRemove']);
         $this -> updateRecordIds($parsedResult['recordIdsToUpdate']);
-        $this -> logActivity("Client credit reduction CRON job ended.");
+        $this -> whmcsExternalService -> logActivity("Client credit reduction CRON job ended.");
     }
 
     public function parseLegacyArrayForData($result) {
 
         //Get products prices
-        $p_core = getProductPriceByName($this -> product_core_name);
-        $p_disk = getProductPriceByName($this -> product_disk_name);
-        $p_memory = getProductPriceByName($this -> product_memory_name);
+        $p_core = $this -> whmcsDbService -> getProductPriceByName($this -> product_core_name);
+        $p_disk = $this -> whmcsDbService -> getProductPriceByName($this -> product_disk_name);
+        $p_memory = $this -> whmcsDbService -> getProductPriceByName($this -> product_memory_name);
 
         if (!$p_core || !$p_disk || !$p_memory) {
-            $this -> logActivity("Error: Product prices not set.");
+            $this -> whmcsExternalService -> logActivity("Error: Product prices not set.");
             return;
         } else {
-            $this -> logActivity("Using product prices for calculations: Cores:" . $p_core . ". Disk:" . $p_disk . ".Memory:" . $p_memory);
+
+            $this -> whmcsExternalService -> logActivity("Using product prices for calculations: Cores:" . $p_core . ". Disk:" . $p_disk . ".Memory:" . $p_memory);
         }
 
         $usersAmountsToRemove = array();
@@ -69,9 +66,9 @@ class OmsReduction {
 
                         $usersAmountsToRemove[$username] += $addAmountToUser;
                         $recordIdsToUpdate[] = $prevRecord['id'];
-                        $this -> logActivity("Adding " . $addAmountToUser . " EUR to user :" . $username . " for " . $hoursInBetween . " hours. Adding Id:" . $prevRecord['id'] . " in array recordIdsToUpdate. Amount for month is:" . $amount);
+                        //$this -> whmcsExternalService -> logActivity("Adding " . $addAmountToUser . " EUR to user :" . $username . " for " . $hoursInBetween . " hours. Adding Id:" . $prevRecord['id'] . " in array recordIdsToUpdate. Amount for month is:" . $amount);
                     } else {
-                        $this -> logActivity("Switching users:" . $prevRecord['username'] . "->" . $currRecord['username']);
+                        $this -> whmcsExternalService -> logActivity("Switching users:" . $prevRecord['username'] . "->" . $currRecord['username']);
                     }
                 }
                 $prevRecord = $currRecord;
@@ -98,11 +95,12 @@ class OmsReduction {
 			ORDER BY conf.username, conf.timestamp";
 
         $result = mysql_query($sql);
-
         $resultsAsArray = array();
-        while ($row = mysql_fetch_assoc($result)) {
+        if ($result) {
+            while ($row = mysql_fetch_assoc($result)) {
 
-            $resultsAsArray[] = $row;
+                $resultsAsArray[] = $row;
+            }
         }
         return $resultsAsArray;
     }
@@ -113,53 +111,29 @@ class OmsReduction {
             $sql = "UPDATE " . $table . " SET processed=true WHERE id IN(" . implode(',', $recordIdsToUpdate) . ')';
             $result = mysql_query($sql);
             if ($result) {
-                $this -> logActivity("Successfully updated " . $table . " with ids:" . implode(',', $recordIdsToUpdate));
+                $this -> whmcsExternalService -> logActivity("Successfully updated " . $table . " with ids:" . implode(',', $recordIdsToUpdate));
             } else {
-                $this -> logActivity("Error updating " . $table);
+                $this -> whmcsExternalService -> logActivity("Error updating " . $table);
             }
         }
     }
 
     function applyCreditRemovingFromUsersAmounts($usersAmountsToRemove) {
         foreach ($usersAmountsToRemove as $username => $amountToRemove) {
-            $userid = get_userid($username);
+            $userid = $this -> whmcsDbService -> getUserid($username);
             if ($userid) {
-                $this -> logActivity("Going to remove credit for user:" . $username . ". Amount: " . $amountToRemove . " EUR ");
-                $isSuccess = $this -> removeCreditForUserId($userid, $username, -$amountToRemove, "OMS_USAGE:(" . date('H:i:s', time()) . ")[removed:" . round($amountToRemove, 5) . " EUR] ");
+                $this -> whmcsExternalService -> logActivity("Going to remove credit for user:" . $username . ". Amount: " . $amountToRemove . " EUR ");
+                $isSuccess = $this -> whmcsExternalService -> removeCreditForUserId($userid, $username, -$amountToRemove, "OMS_USAGE:(" . date('H:i:s', time()) . ")[removed:" . round($amountToRemove, 5) . " EUR] ");
                 if ($isSuccess) {
                     //$this -> updateUserCreditReductionRuntime($userid);
-                    updateClientCreditBalance($userid);
+                    $this -> whmcsExternalService -> updateClientCreditBalance($userid);
                 } else {
-                    $this -> logActivity("Error: Credit reduction error for user:" . $username . ".");
+                    $this -> whmcsExternalService -> logActivity("Error: Credit reduction error for user:" . $username . ".");
                 }
             } else {
-                $this -> logActivity("Userid not found for username " . $username);
+                $this -> whmcsExternalService -> logActivity("Userid not found for username " . $username);
             }
         }
-    }
-
-    function removeCreditForUserId($userId, $username, $amount, $desc) {
-        if ($amount > 0) {
-            $this -> logActivity("Error. Tried to ADD credit to userId:" . $userId);
-            return;
-        }
-
-        $postfields["action"] = "addcredit";
-        $postfields["clientid"] = $userId;
-        $postfields["description"] = $desc;
-        $postfields["amount"] = $amount;
-
-        $clientData = callAPI($postfields);
-
-        if ($clientData['result'] == "success") {
-            $this -> logActivity("Successfully removed amount of " . $amount . " credit from userId:" . $userId . "(" . $username . ")");
-            return true;
-        } else if ($clientData['result'] == "error") {
-            $this -> logActivity("Error removing credit from userId:" . $userId . ". Error:" . $clientData['message']);
-            return false;
-        }
-
-        return false;
     }
 
     /*
@@ -173,7 +147,7 @@ class OmsReduction {
         $query = mysql_query($sql);
         $result = mysql_fetch_array($query);
         if ($result['timestamp']) {
-            $this -> logActivity("== Last timestamp for " . $username . ": " . $result['timestamp']);
+            $this -> whmcsExternalService -> logActivity("== Last timestamp for " . $username . ": " . $result['timestamp']);
             return $result['timestamp'];
         } else {
             // If script is run for first time for user, then timestamp must come from conf_changes table
@@ -184,7 +158,7 @@ class OmsReduction {
             if ($result) {
                 return $result['timestamp'];
             } else {
-                $this -> logActivity("No result from CREDIT_REDUCTION or CONF_CHANGES for userid: " . $userId);
+                $this -> whmcsExternalService -> logActivity("No result from CREDIT_REDUCTION or CONF_CHANGES for userid: " . $userId);
             }
         }
         return null;
@@ -199,7 +173,7 @@ class OmsReduction {
         $sql = "INSERT INTO " . $table . " (userid, timestamp) VALUES (" . $userId . ", CURRENT_TIMESTAMP)";
         $retval = mysql_query($sql);
         if (!$retval) {
-            $this -> logActivity("Credit reduction run time update error for userid: " . $userId);
+            $this -> whmcsExternalService -> logActivity("Credit reduction run time update error for userid: " . $userId);
         }
         return $retval;
     }

@@ -1,6 +1,7 @@
 <?php
-include_once ("configuration.php");
-include_once ("OmsReduction.php");
+require_once ("configuration.php");
+require_once ("includes/hooks/inc/oms_config.php");
+require_once ("Classes/Autoloader.php");
 
 try {
     // Check MySQL Configuration
@@ -15,8 +16,10 @@ try {
 } catch (Exception $e) {
     echo 'Error: ', $e -> getMessage(), "\n";
 }
-global $product_core_name, $product_disk_name, $product_memory_name, $oms_usage_db;
-$omsReduction = new \Opennode\Whmcs\Oms\OmsReduction($product_core_name, $product_disk_name, $product_memory_name, $oms_usage_db);
-$omsReduction->reduce_users_credit();
+global $product_core_name, $product_disk_name, $product_memory_name, $oms_usage_db, $whmcs_admin_user, $whmcs_admin_password, $whmcs_api_url, $oms_usage_db;
 
+$whmcsDbService = new \Opennode\Whmcs\Service\WhmcsDbService();
+$whmcsExternalService = new \Opennode\Whmcs\Service\WhmcsExternalService($whmcs_admin_user, $whmcs_admin_password, $whmcs_api_url, $oms_usage_db);
+$omsReduction = new \Opennode\Whmcs\Service\OmsReductionService($product_core_name, $product_disk_name, $product_memory_name, $oms_usage_db, $whmcsExternalService, $whmcsDbService);
+$omsReduction -> reduce_users_credit();
 ?>

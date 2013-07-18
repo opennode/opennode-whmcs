@@ -1,0 +1,7 @@
+<phpunit bootstrap="../Classes/Autoloader.php">
+	<testsuites>
+    <testsuite name="Object_Freezer">
+      <directory>./</directory>
+    </testsuite>
+  </testsuites>
+</phpunit>

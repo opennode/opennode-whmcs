@@ -16,7 +16,7 @@ function get_username($userid) {
 	$username = $usernamefield[0];
 	return $username;
 }
-
+//moved
 function get_userid($username) {
 	$result = mysql_query("SELECT id FROM tblcustomfields WHERE fieldname='Username'");
 	$grab_customfieldid = mysql_fetch_row($result);
@@ -152,6 +152,7 @@ function callApi($postfields) {
 /**
  * Updates client credit with external api, internal did not work.
  */
+ //moved
 function updateClientCreditBalance($userId) {
 	logActivityGlobal("Updating client $userId");
 	$clientCredit = 0;
