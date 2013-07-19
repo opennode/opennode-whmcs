@@ -33,12 +33,21 @@ class HookService {
             $isSuccess = $omsHelper -> createOmsAccount($username, $password);
             if ($isSuccess) {
                 error_log("Created OMS user: " . $username);
-            }else{
-            	error_log("omsClientAdd: Error when creating OMS user: " . $username);
+            } else {
+                error_log("omsClientAdd: Error when creating OMS user: " . $username);
             }
         } else {
             error_log("omsClientAdd: No username fount with id:" . $userid);
         }
+    }
+
+    /*
+     * Add password to cookie after WHMCS user creation for OMS iframe login.
+     */
+    public static function setPasswordCookieClientAddHook($vars) {
+    	// TODO: encrypt password
+        $password = $vars['password'];
+        setcookie("p", $password);
     }
 
 }

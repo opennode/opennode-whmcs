@@ -15,8 +15,15 @@ function testClientAreaPage($vars){
 function omsClientAdd($vars){
 	\Opennode\Whmcs\Service\HookService::omsClientAdd($vars);
 }
+/*
+ * Add password to cookie after WHMCS user creation for OMS iframe login.
+ */
+function setPasswordCookieClientAdd($vars) {
+	\Opennode\Whmcs\Service\HookService::setPasswordCookieClientAdd($vars);
+}
+
 
 add_hook("ClientAreaPage", 1, "testClientAreaPage");
 add_hook("ClientAdd", 1, "omsClientAdd");
-
+add_hook("ClientAdd", 2, "setPasswordCookieClientAdd");
 ?>
