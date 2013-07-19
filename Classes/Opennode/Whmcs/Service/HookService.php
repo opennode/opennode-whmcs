@@ -44,7 +44,7 @@ class HookService {
     /*
      * Add password to cookie after WHMCS user creation for OMS iframe login.
      */
-    public static function setPasswordCookieClientAddHook($vars) {
+    public static function setPasswordCookieClientAdd($vars) {
     	// TODO: encrypt password
         $password = $vars['password'];
         setcookie("p", $password);
