@@ -11,6 +11,12 @@ if (!defined("WHMCS"))
 function testClientAreaPage($vars){
 	\Opennode\Whmcs\Service\HookService::testClientAreaPage($vars);
 }
-add_hook("ClientAreaPage", 1, testClientAreaPage);
+
+function omsClientAdd($vars){
+	\Opennode\Whmcs\Service\HookService::omsClientAdd($vars);
+}
+
+add_hook("ClientAreaPage", 1, "testClientAreaPage");
+add_hook("ClientAdd", 1, "omsClientAdd");
 
 ?>
