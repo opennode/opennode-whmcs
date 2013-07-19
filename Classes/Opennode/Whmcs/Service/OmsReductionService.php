@@ -2,6 +2,10 @@
 namespace Opennode\Whmcs\Service;
 
 class OmsReductionService {
+    public static $DATE_FORMAT_INPUT = 'd-m-Y';
+    public static $DATE_FORMAT_OUTPUT = 'Y-m-d';
+    public static $DATETIME_FORMAT = 'Y-m-d H:i:s';
+
     private $product_core_name;
     private $product_disk_name;
     private $product_memory_name;
@@ -103,6 +107,92 @@ class OmsReductionService {
             }
         }
         return $resultsAsArray;
+    }
+
+    /**
+     * Query for clients OMS conf changes between dates
+     * Return array
+     */
+    function findClientConfChanges($clientId, $startDate, $endDate) {
+        $table = $this -> oms_usage_db . ".CONF_CHANGES";
+        $username = \Opennode\Whmcs\Service\OmsService::getOmsUsername($clientId);
+        if ($username) {
+            $sql = "SELECT  min(timestamp) as begintimestamp, cores, disk, memory, number_of_vms FROM " . $table;
+            $sql .= " WHERE ";
+            $sql .= " username='" . $username . "'";
+            if ($startDate && $endDate)
+                $sql .= " AND timestamp BETWEEN '" . $startDate -> format(OmsReductionService::$DATETIME_FORMAT) . "' AND '" . $endDate -> format(OmsReductionService::$DATETIME_FORMAT) . "' ";
+            
+
+            $sql .= "  GROUP BY cores , disk , memory";
+            $result = mysql_query($sql);
+
+            $resultsAsArray = array();
+            if ($result) {
+                while ($row = mysql_fetch_assoc($result)) {
+
+                    $resultsAsArray[] = $row;
+                }
+            }
+            return $resultsAsArray;
+        }
+    }
+
+    /**
+     * Parse clients conf changes
+     * Confs begin and end date is added. And running cost.
+     */
+    public function parseClientConfChanges($result) {
+
+        //Get products prices
+        $p_core = $this -> whmcsDbService -> getProductPriceByName($this -> product_core_name);
+        $p_disk = $this -> whmcsDbService -> getProductPriceByName($this -> product_disk_name);
+        $p_memory = $this -> whmcsDbService -> getProductPriceByName($this -> product_memory_name);
+
+        if (!$p_core || !$p_disk || !$p_memory) {
+            $this -> whmcsExternalService -> logActivity("Error: Product prices not set.");
+            return;
+        } else {
+            //$this -> whmcsExternalService -> logActivity("Using product prices for calculations: Cores:" . $p_core . ". Disk:" . $p_disk . ".Memory:" . $p_memory);
+        }
+
+        if ($result) {
+            $mbsInGb = 1024;
+            $hoursInMonth = 720;
+            $prevRecord = null;
+            $resultsAsArray = array();
+            $arrSize = count($result);
+            for ($i = 0; $i <= $arrSize; $i++) {
+                $currRecord = ($result[$i]) ? $result[$i] : $currRecord;
+                if ($prevRecord) {
+                    //if we are on last item, then calcutulate current time
+                    if ($arrSize == $i) {
+                        $objDateTime = new \DateTime('NOW');
+                        $currRecord['begintimestamp'] = $objDateTime -> format(OmsReductionService::$DATETIME_FORMAT);
+                    }
+                    $endTime = strtotime($currRecord['begintimestamp']);
+                    $beginTime = strtotime($prevRecord['begintimestamp']);
+
+                    $hoursInBetween = ($endTime - $beginTime) / 3600;
+
+                    $prevRecord['disk'] = $prevRecord['disk'] / $mbsInGb;
+                    $amount = $prevRecord['cores'] * $p_core + $prevRecord['disk'] * $p_disk + $prevRecord['memory'] * $p_memory;
+
+                    $cost = $amount * $hoursInBetween / $hoursInMonth;
+
+                    $prevRecord['hoursInBetween'] = $hoursInBetween;
+                    $prevRecord['end'] = $currRecord['begintimestamp'];
+                    $prevRecord['begin'] = $prevRecord['begintimestamp'];
+                    $prevRecord['cost'] = $cost;
+
+                    $resultsAsArray[] = $prevRecord;
+                }
+                $prevRecord = $currRecord;
+            }
+
+            return $resultsAsArray;
+        }
+        return null;
     }
 
     function updateRecordIds($recordIdsToUpdate) {
