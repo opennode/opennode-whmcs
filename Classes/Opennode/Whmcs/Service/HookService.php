@@ -105,8 +105,7 @@ class HookService {
                 $mbsInGb = 1024;
                 $data['disk'] = $data['disk'] / $mbsInGb;
                 $amount = $data['cores'] * $p_core + $data['disk'] * $p_disk + $data['memory'] * $p_memory;
-				//\Opennode\Whmcs\Service\OmsReductionService
-                $data['vm_cost'] = round($amount, 5);
+                $data['vm_cost'] = \Opennode\Whmcs\Service\OmsReductionService::applyTax($userId, $amount);
             }
         }
         $data['currentcredit'] = getCreditForUserId($userId);
