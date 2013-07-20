@@ -29,6 +29,21 @@ class WhmcsDbService {
         }
     }
 
+    /**
+     * Get clients taxrate
+     */
+    public static function getClientsTaxrate($clientId) {
+        if (is_numeric($clientId)) {
+            $sql = "select taxrate from tbltax where country=(select country from tblclients where id=" . $clientId . ")";
+            $query = mysql_query($sql);
+            if ($query) {
+                $row = mysql_fetch_row($query);
+                if ($row)
+                    return $row[0];
+            }
+        }
+    }
+
     function getUserid($username) {
         $result = mysql_query("SELECT id FROM tblcustomfields WHERE fieldname='Username'");
         $grab_customfieldid = mysql_fetch_row($result);

@@ -92,11 +92,11 @@ class OmsReductionService {
 
         $table = $this -> oms_usage_db . ".CONF_CHANGES";
 
-        $sql = "select conf.id, conf.username, conf.timestamp, conf.cores, conf.disk, conf.memory, conf.number_of_vms from 
-			" . $table . " as conf 
-			where conf.processed = false 
-			AND timestamp <= DATE_SUB(now(), INTERVAL 1 HOUR) 
-			ORDER BY conf.username, conf.timestamp";
+        $sql = "select conf.id, conf.username, conf.timestamp, conf.cores, conf.disk, conf.memory, conf.number_of_vms from
+" . $table . " as conf
+where conf.processed = false
+AND timestamp <= DATE_SUB(now(), INTERVAL 1 HOUR)
+ORDER BY conf.username, conf.timestamp";
 
         $result = mysql_query($sql);
         $resultsAsArray = array();
@@ -154,7 +154,7 @@ class OmsReductionService {
      * Parse clients conf changes
      * Confs begin and end date is added. And running cost.
      */
-    public function parseClientConfChanges($result) {
+    public function parseClientConfChanges($result, $clientId) {
 
         //Get products prices
         $p_core = $this -> whmcsDbService -> getProductPriceByName($this -> product_core_name);
@@ -195,8 +195,8 @@ class OmsReductionService {
                     $prevRecord['hoursInBetween'] = $hoursInBetween;
                     $prevRecord['end'] = $currRecord['begintimestamp'];
                     $prevRecord['begin'] = $prevRecord['begintimestamp'];
-                    $prevRecord['cost'] = $cost;
-					$prevRecord['price'] = $amount;
+                    $prevRecord['cost'] = self::applyTax($clientId, $cost);
+                    $prevRecord['price'] = self::applyTax($clientId, $amount);
 
                     $resultsAsArray[] = $prevRecord;
                 }
@@ -225,12 +225,23 @@ class OmsReductionService {
         foreach ($usersAmountsToRemove as $username => $amountToRemove) {
             $userid = $this -> whmcsDbService -> getUserid($username);
             if ($userid) {
-                $this -> whmcsExternalService -> logActivity("Going to remove credit for user:" . $username . ". Amount: " . $amountToRemove . " EUR ");
-                $this -> whmcsDbService -> removeCreditFromClient($userid, $username, -$amountToRemove, "OMS_USAGE:(" . date('H:i:s', time()) . ")[removed:" . round($amountToRemove, 5) . " EUR] ");
+                $amountToRemoveWithTax = self::applyTax($clientId, $amountToRemove);
+                $this -> whmcsExternalService -> logActivity("Going to remove credit for user:" . $username . ". Amount: " . $amountToRemoveWithTax . " EUR. Without tax:" . $amountToRemove);
+                $this -> whmcsDbService -> removeCreditFromClient($userid, $username, -$amountToRemoveWithTax, "OMS_USAGE:(" . date('H:i:s', time()) . ")[removed:" . round($amountToRemoveWithTax, 5) . " EUR] ");
             } else {
                 $this -> whmcsExternalService -> logActivity("Userid not found for username " . $username);
             }
         }
+    }
+
+    /**
+     * Applies tax, if any, to given user.
+     */
+    public static function applyTax($clientId, $amount) {
+        $taxrate = \Opennode\Whmcs\Service\WhmcsDbService::getClientsTaxrate($clientId);
+        $taxrate = ($taxrate) ? $taxrate : 0;
+        $amountWithTax = $amount + $amount * $taxrate / 100;
+        return $amountWithTax;
     }
 
     /*

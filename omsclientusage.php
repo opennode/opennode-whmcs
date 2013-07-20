@@ -22,7 +22,7 @@ $omsReduction = new \Opennode\Whmcs\Service\OmsReductionService($product_core_na
 
 
 $confChanges = $omsReduction -> findClientConfChanges($clientId, null, null);
-$parsedChanges = $omsReduction -> parseClientConfChanges($confChanges);
+$parsedChanges = $omsReduction -> parseClientConfChanges($confChanges, $clientId);
 
 
 $ca -> assign('omsconfs', $parsedChanges);
