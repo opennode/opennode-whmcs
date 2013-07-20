@@ -35,11 +35,14 @@
     </div>
 </div>
 
+
+
 {if $announcements}
 <div class="alert alert-warning">
     <p><strong>{$LANG.ourlatestnews}:</strong> {$announcements.0.text|strip_tags|truncate:100:'...'} - <a href="announcements.php?id={$announcements.0.id}" class="btn btn-mini">{$LANG.more}...</a></p>
 </div>
 {/if}
+
 {if $ccexpiringsoon}
 <div class="alert alert-error">
     <p><strong>{$LANG.ccexpiringsoon}:</strong> {$LANG.ccexpiringsoondesc|sprintf2:'<a href="clientarea.php?action=creditcard" class="btn btn-mini">':'</a>'}</p>
@@ -55,7 +58,7 @@
     <p><strong>{$LANG.youhaveoverdueinvoices|sprintf2:$clientsstats.numoverdueinvoices}:</strong> {$LANG.overdueinvoicesdesc|sprintf2:'<a href="clientarea.php?action=masspay&all=true" class="btn btn-mini btn-danger">':'</a>'}</p>
 </div>
 {/if}
-
+{include file='default/omsclientusage.tpl'}
 {if $condlinks.domainreg || $condlinks.domaintrans || $condlinks.domainown}
 <form method="post" action="domainchecker.php">
 <div class="well textcenter">

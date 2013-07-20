@@ -117,21 +117,33 @@ class OmsReductionService {
         $table = $this -> oms_usage_db . ".CONF_CHANGES";
         $username = \Opennode\Whmcs\Service\OmsService::getOmsUsername($clientId);
         if ($username) {
-            $sql = "SELECT  min(timestamp) as begintimestamp, cores, disk, memory, number_of_vms FROM " . $table;
+            $sql = "SELECT  timestamp as begintimestamp, cores, disk, memory, number_of_vms FROM " . $table;
             $sql .= " WHERE ";
             $sql .= " username='" . $username . "'";
             if ($startDate && $endDate)
                 $sql .= " AND timestamp BETWEEN '" . $startDate -> format(OmsReductionService::$DATETIME_FORMAT) . "' AND '" . $endDate -> format(OmsReductionService::$DATETIME_FORMAT) . "' ";
-            
 
-            $sql .= "  GROUP BY cores , disk , memory";
+            $sql .= " ORDER BY timestamp ASC";
             $result = mysql_query($sql);
-
             $resultsAsArray = array();
             if ($result) {
-                while ($row = mysql_fetch_assoc($result)) {
+                $prevRecord = null;
+                $i = 0;
+                while ($curRecord = mysql_fetch_assoc($result)) {
+                    if ($i > 0) {
+                        if ($prevRecord['cores'] == $curRecord['cores'] && $prevRecord['disk'] == $curRecord['disk'] && $prevRecord['memory'] == $curRecord['memory'] && $prevRecord['number_of_vms'] == $curRecord['number_of_vms']) {
+                            //skipping row is same as prev
+                        } else {
+                            $resultsAsArray[] = $curRecord;
+                            //add item that is not same as previous
+                        }
 
-                    $resultsAsArray[] = $row;
+                    } else {
+                        $resultsAsArray[] = $curRecord;
+                        //add first item
+                    }
+                    $prevRecord = $curRecord;
+                    $i++;
                 }
             }
             return $resultsAsArray;

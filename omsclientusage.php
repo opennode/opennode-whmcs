@@ -25,7 +25,7 @@ $confChanges = $omsReduction -> findClientConfChanges($clientId, null, null);
 $parsedChanges = $omsReduction -> parseClientConfChanges($confChanges);
 
 
-$ca -> assign('confs', $parsedChanges);
+$ca -> assign('omsconfs', $parsedChanges);
 $ca -> setTemplate('omsclientusage');
 $ca -> output();
 ?>

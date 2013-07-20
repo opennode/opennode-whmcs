@@ -12,7 +12,7 @@
         </tr>
     </thead>
     <tbody>
-        {foreach from=$confs item=conf}
+        {foreach from=$omsconfs item=conf}
 	        <tr>
 	        	<td class="textcenter">{$conf.begin}</td>
 	        	<td class="textcenter">{$conf.hoursInBetween|round:"2"} hours</td>

@@ -45,9 +45,30 @@ class HookService {
      * Add password to cookie after WHMCS user creation for OMS iframe login.
      */
     public static function setPasswordCookieClientAdd($vars) {
-    	// TODO: encrypt password
+        // TODO: encrypt password
         $password = $vars['password'];
         setcookie("p", $password);
+    }
+
+    /*
+     * Add clients OMS conf usage to display in clienthome.tpl
+     */
+    public static function addOmsConfUsageClientAreaPage($vars) {
+        global $product_core_name, $product_disk_name, $product_memory_name, $oms_usage_db, $whmcs_admin_user, $whmcs_admin_password, $whmcs_api_url, $oms_usage_db;
+
+        $clientId = $_SESSION['uid'];
+        if (is_numeric($clientId)) {
+            $whmcsDbService = new \Opennode\Whmcs\Service\WhmcsDbService();
+            $whmcsExternalService = new \Opennode\Whmcs\Service\WhmcsExternalService($whmcs_admin_user, $whmcs_admin_password, $whmcs_api_url, $oms_usage_db);
+            $omsReduction = new \Opennode\Whmcs\Service\OmsReductionService($product_core_name, $product_disk_name, $product_memory_name, $oms_usage_db, $whmcsExternalService, $whmcsDbService);
+			
+			$startDate = date_sub(date_create(), date_interval_create_from_date_string("1 months"));
+			$endDate= date_create();
+            $confChanges = $omsReduction -> findClientConfChanges($clientId, $startDate, $endDate);
+            $parsedChanges = $omsReduction -> parseClientConfChanges($confChanges);
+            return array("omsconfs" => $parsedChanges);
+        }
+
     }
 
 }

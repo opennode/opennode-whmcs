@@ -21,9 +21,14 @@ function omsClientAdd($vars){
 function setPasswordCookieClientAdd($vars) {
 	\Opennode\Whmcs\Service\HookService::setPasswordCookieClientAdd($vars);
 }
-
-
+/*
+ * Add clients OMS conf usage to display in clienthome.tpl
+ */
+function addOmsConfUsageClientAreaPage($vars){
+	return \Opennode\Whmcs\Service\HookService::addOmsConfUsageClientAreaPage($vars);
+}
 add_hook("ClientAreaPage", 1, "testClientAreaPage");
 add_hook("ClientAdd", 1, "omsClientAdd");
 add_hook("ClientAdd", 2, "setPasswordCookieClientAdd");
+add_hook("ClientAreaPage", 1, "addOmsConfUsageClientAreaPage");
 ?>
