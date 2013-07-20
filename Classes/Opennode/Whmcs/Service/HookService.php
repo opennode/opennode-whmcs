@@ -103,8 +103,9 @@ class HookService {
             if ($data) {
                 $id = $data['id'];
                 $mbsInGb = 1024;
-                $data['disk'] = round($data['disk'] / $mbsInGb, 0);
+                $data['disk'] = $data['disk'] / $mbsInGb;
                 $amount = $data['cores'] * $p_core + $data['disk'] * $p_disk + $data['memory'] * $p_memory;
+				//\Opennode\Whmcs\Service\OmsReductionService
                 $data['vm_cost'] = round($amount, 5);
             }
         }
