@@ -8,6 +8,7 @@
             <th class="textcenter">{$LANG.clientUsage.disc}</th>
             <th class="textcenter">{$LANG.clientUsage.memory}</th>
             <th class="textcenter">{$LANG.clientUsage.cost}</th>
+            <th class="textcenter">{$LANG.clientUsage.price}</th>
         </tr>
     </thead>
     <tbody>
@@ -20,6 +21,7 @@
 	            <td class="textcenter">{$conf.disk|round:"2"} {$LANG.gb}</td>
 	            <td class="textcenter">{$conf.memory} {$LANG.gb}</td>
 	            <td class="textcenter">{$conf.cost|round:"5"} {$LANG.eur}</td>
+	            <td class="textcenter">{$conf.price|round:"5"} {$LANG.clientUsage.priceMo}</td>
 	        </tr>
         {/foreach}
     </tbody>

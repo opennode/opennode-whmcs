@@ -196,6 +196,7 @@ class OmsReductionService {
                     $prevRecord['end'] = $currRecord['begintimestamp'];
                     $prevRecord['begin'] = $prevRecord['begintimestamp'];
                     $prevRecord['cost'] = $cost;
+					$prevRecord['price'] = $amount;
 
                     $resultsAsArray[] = $prevRecord;
                 }

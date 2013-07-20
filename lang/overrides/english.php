@@ -25,5 +25,7 @@ $_LANG['clientUsage']['nrOfVms'] = "Nr of VMs";
 $_LANG['clientUsage']['cores'] = "Cores";
 $_LANG['clientUsage']['disc'] = "Disc";
 $_LANG['clientUsage']['memory'] = "Memory";
+$_LANG['clientUsage']['price'] = "Price";
+$_LANG['clientUsage']['priceMo'] = "EUR/mo";
 
 ?>
