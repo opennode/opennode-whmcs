@@ -18,4 +18,12 @@ $_LANG['eur'] = "EUR";
 
 $_LANG['navservicesorderbundles'] = "New VM";
 
+$_LANG['omsclientusage'] = "Months usage stats";
+$_LANG['clientUsage']['startTime'] = "Start time";
+$_LANG['clientUsage']['activeHours'] = "Active hours";
+$_LANG['clientUsage']['nrOfVms'] = "Nr of VMs";
+$_LANG['clientUsage']['cores'] = "Cores";
+$_LANG['clientUsage']['disc'] = "Disc";
+$_LANG['clientUsage']['memory'] = "Memory";
+
 ?>

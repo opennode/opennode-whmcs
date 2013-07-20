@@ -58,7 +58,15 @@
     <p><strong>{$LANG.youhaveoverdueinvoices|sprintf2:$clientsstats.numoverdueinvoices}:</strong> {$LANG.overdueinvoicesdesc|sprintf2:'<a href="clientarea.php?action=masspay&all=true" class="btn btn-mini btn-danger">':'</a>'}</p>
 </div>
 {/if}
+
+
+<div class="styled_title">
+    <h3>{$LANG.omsclientusage}</h3>
+</div>
+
 {include file='default/omsclientusage.tpl'}
+
+
 {if $condlinks.domainreg || $condlinks.domaintrans || $condlinks.domainown}
 <form method="post" action="domainchecker.php">
 <div class="well textcenter">
