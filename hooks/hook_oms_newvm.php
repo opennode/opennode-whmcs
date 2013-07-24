@@ -16,17 +16,16 @@ function create_new_vm_with_invoice($vars) {
 	$userId = $invoice['userid'];
 	$username = get_username($userId);
 	if (!$username) {
-		logActivity("No username found for id:$userId");
+		logActivity("No username found for id: $userId");
 		return;
 	}
-	//On invoice payment it is needed that credit stays to account. It is automattically removed, manually added:
+	//On invoice payment it is needed that credit stays on account. It is automattically removed, manually added:
 	$amountPaid = $invoice['total'];
-	
-	$boughtVmProduct = false;// To add credit only when client buys vm product, not adds funds.
 	$items = $invoice['items'];
-	foreach ($items as $item) {
+	foreach ($items['item'] as $item) {
+		$boughtVmProduct = false; // to track if the item is a VM or a credit package
 		$vmData = array();
-		$itemId = $item[0]['relid'];
+		$itemId = $item['relid'];
 		$clientproduct = getClientsProduct($userId, $itemId);
 
 		//get template
@@ -52,18 +51,22 @@ function create_new_vm_with_invoice($vars) {
 				}
 			}
 		}
-		if (!$vmData['template']) {
-			logActivity("Error. No template found for product id:" . $itemId);
-			return;
+		if ($boughtVmProduct) {
+			if (!$vmData['template'] ) {
+				logActivity("Error. No template found for product id:" . $itemId);
+				continue;
+			}
+		} else {
+			logActivity("Processing a non-VM product");
 		}
-		//get data from client product
-		$vmData['hostname'] = $clientproduct['domain'];
-		$vmData['root_password'] = $clientproduct['password'];
-		$vmData['root_password_repeat'] = $clientproduct['password'];
-		$vmData['nameservers'] = $vm_default_nameservers;
 
 		//$vmData[swap_size]=0.5;
-		if ($clientproduct) {
+		if ($clientproduct && $boughtVmProduct) {
+			//get data from client product
+			$vmData['hostname'] = $clientproduct['domain'];
+			$vmData['root_password'] = $clientproduct['password'];
+			$vmData['root_password_repeat'] = $clientproduct['password'];
+			$vmData['nameservers'] = $vm_default_nameservers;
 			//get item
 			$products = getBundlesProductsByOtherProductId($clientproduct['pid']);
 			if ($products) {
@@ -114,11 +117,11 @@ function create_new_vm_with_invoice($vars) {
 		}
 	}
 
-	if($boughtVmProduct){
-		$desc = "Adding credit for invoice:" . $invoiceId;
-		addCreditForUserId($userId, $username, $amountPaid, $desc);
-		updateClientCreditBalance($userId);
-	}
+	// TODO this breaks Add Funds functionality as it shall add funds x2
+	$desc = "Adding credit for invoice:" . $invoiceId;
+	addCreditForUserId($userId, $username, $amountPaid, $desc);
+	updateClientCreditBalance($userId);
+	
 	/*logActivity("Removing orders for userId:" . $userId);
 	$orders = getUsersOrders($userId);
 	if ($orders) {
@@ -126,7 +129,7 @@ function create_new_vm_with_invoice($vars) {
 			removeUsersOrder($order['id']);
 		}
 	}*/
-	logActivity("POST-ing new vm data ended.");
+	logActivity("Processing user purchase is done.");
 }
 
 function getInvoiceById($invoiceId) {
