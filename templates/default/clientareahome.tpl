@@ -24,7 +24,6 @@
                     <h2>{$LANG.accountoverview}</h2>
                 </div>
             </div>
-
             <p>{$LANG.statscurrentcredit}: <strong>{$omsdata.currentcredit|round:"2"}</strong> {$LANG.eur}</p>
             <p>{$LANG.statsnrofvms}: <strong>{$omsdata.number_of_vms}</strong></p>
             <p>{$LANG.statsnrofcores}: <strong>{$omsdata.cores}</strong></p>

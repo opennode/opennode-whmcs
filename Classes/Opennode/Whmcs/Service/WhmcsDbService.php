@@ -95,8 +95,29 @@ class WhmcsDbService {
             $this -> logActivity("addCredit error for userid: " . $clientId);
         }
         return $retval;
-
     }
-
+	
+	/**
+	 * Get id of the specified client group. 
+	 */
+	function getClientGroupId($client_group_name) {
+        $result = mysql_query("SELECT id FROM tblclientgroups WHERE groupname='". $client_group_name ."'");
+        $grab_customfieldid = mysql_fetch_row($result);
+        return $grab_customfieldid[0];
+    }
+	
+	/**
+	 * Return list of client id's belonging to a defined customer group.
+	 */
+	function getClientsByGroup($client_group_id) {
+		$result = mysql_query("SELECT id FROM tblclients WHERE groupid='". $client_group_id ."'");
+		$resultsAsArray = array();
+        if ($result) {
+            while ($row = mysql_fetch_assoc($result)) {
+                $resultsAsArray[] = $row;
+            }
+        }
+        return $resultsAsArray;
+	}
 }
 ?>

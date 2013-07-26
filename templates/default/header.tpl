@@ -40,9 +40,9 @@
           <span class="icon-bar"></span>
         </a>
         <div class="nav-collapse">
-        <ul class="nav">
-            <li><a href="{if $loggedin}clientarea{else}cart{/if}.php">{$LANG.hometitle}</a></li>
-        </ul>
+		<ul class="nav">
+			<li><a href="{if $loggedin}clientarea{else}cart{/if}.php">{$LANG.hometitle}</a></li>
+		</ul>
 {if $loggedin}
 
     <ul class="nav">
@@ -54,98 +54,98 @@
     </ul>
 
 
-          {if $condlinks.domainreg || $condlinks.domaintrans}<ul class="nav">
-            <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">{$LANG.navdomains}&nbsp;<b class="caret"></b></a>
-              <ul class="dropdown-menu">
-                <li><a href="clientarea.php?action=domains">{$LANG.clientareanavdomains}</a></li>
-                <li class="divider"></li>
-                <li><a href="cart.php?gid=renewals">{$LANG.navrenewdomains}</a></li>
-                {if $condlinks.domainreg}<li><a href="cart.php?a=add&domain=register">{$LANG.navregisterdomain}</a></li>{/if}
-                {if $condlinks.domaintrans}<li><a href="cart.php?a=add&domain=transfer">{$LANG.navtransferdomain}</a></li>{/if}
-                <li class="divider"></li>
-                <li><a href="domainchecker.php">{$LANG.navwhoislookup}</a></li>
-              </ul>
-            </li>
-          </ul>{/if}
+		  {if $condlinks.domainreg || $condlinks.domaintrans}<ul class="nav">
+			<li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">{$LANG.navdomains}&nbsp;<b class="caret"></b></a>
+			  <ul class="dropdown-menu">
+				<li><a href="clientarea.php?action=domains">{$LANG.clientareanavdomains}</a></li>
+				<li class="divider"></li>
+				<li><a href="cart.php?gid=renewals">{$LANG.navrenewdomains}</a></li>
+				{if $condlinks.domainreg}<li><a href="cart.php?a=add&domain=register">{$LANG.navregisterdomain}</a></li>{/if}
+				{if $condlinks.domaintrans}<li><a href="cart.php?a=add&domain=transfer">{$LANG.navtransferdomain}</a></li>{/if}
+				<li class="divider"></li>
+				<li><a href="domainchecker.php">{$LANG.navwhoislookup}</a></li>
+			  </ul>
+			</li>
+		  </ul>{/if}
 
-          <ul class="nav">
-            <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">{$LANG.navbilling}&nbsp;<b class="caret"></b></a>
-              <ul class="dropdown-menu">
-                <li><a href="clientarea.php?action=invoices">{$LANG.invoices}</a></li>
-                <li><a href="clientarea.php?action=quotes">{$LANG.quotestitle}</a></li>
-                <li class="divider"></li>
-                {if $condlinks.addfunds}<li><a href="clientarea.php?action=addfunds">{$LANG.addfunds}</a></li>{/if}
-                {if $condlinks.masspay}<li><a href="clientarea.php?action=masspay&all=true">{$LANG.masspaytitle}</a></li>{/if}
-                {if $condlinks.updatecc}<li><a href="clientarea.php?action=creditcard">{$LANG.navmanagecc}</a></li>{/if}
-              </ul>
-            </li>
-          </ul>
+		  <ul class="nav">
+			<li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">{$LANG.navbilling}&nbsp;<b class="caret"></b></a>
+			  <ul class="dropdown-menu">
+				<li><a href="clientarea.php?action=invoices">{$LANG.invoices}</a></li>
+				<li><a href="clientarea.php?action=quotes">{$LANG.quotestitle}</a></li>
+				<li class="divider"></li>
+				{if $condlinks.addfunds}<li><a href="clientarea.php?action=addfunds">{$LANG.addfunds}</a></li>{/if}
+				{if $condlinks.masspay}<li><a href="clientarea.php?action=masspay&all=true">{$LANG.masspaytitle}</a></li>{/if}
+				{if $condlinks.updatecc}<li><a href="clientarea.php?action=creditcard">{$LANG.navmanagecc}</a></li>{/if}
+			  </ul>
+			</li>
+		  </ul>
 
-          <ul class="nav">
-            <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">{$LANG.navsupport}&nbsp;<b class="caret"></b></a>
-              <ul class="dropdown-menu">
-                <li><a href="supporttickets.php">{$LANG.navtickets}</a></li>
-                <li><a href="knowledgebase.php">{$LANG.knowledgebasetitle}</a></li>
-                <li><a href="downloads.php">{$LANG.downloadstitle}</a></li>
-                {* <li><a href="serverstatus.php">{$LANG.networkstatustitle}</a></li> *}
-              </ul>
-            </li>
-          </ul>
+		  <ul class="nav">
+			<li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">{$LANG.navsupport}&nbsp;<b class="caret"></b></a>
+			  <ul class="dropdown-menu">
+				<li><a href="supporttickets.php">{$LANG.navtickets}</a></li>
+				<li><a href="knowledgebase.php">{$LANG.knowledgebasetitle}</a></li>
+				<li><a href="downloads.php">{$LANG.downloadstitle}</a></li>
+				{* <li><a href="serverstatus.php">{$LANG.networkstatustitle}</a></li> *}
+			  </ul>
+			</li>
+		  </ul>
 {*
-          <ul class="nav">
-            <li><a href="submitticket.php">{$LANG.navopenticket}</a></li>
-          </ul>
+		  <ul class="nav">
+			<li><a href="submitticket.php">{$LANG.navopenticket}</a></li>
+		  </ul>
 
-          {if $condlinks.affiliates}<ul class="nav">
+		  {if $condlinks.affiliates}<ul class="nav">
             <li><a href="affiliates.php">{$LANG.affiliatestitle}</a></li>
-          </ul>{/if}
+		  </ul>{/if}
 *}
-          <ul class="nav pull-right">
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown">{$LANG.hello}, {$loggedinuser.firstname}!&nbsp;<b class="caret"></b></a>
-              <ul class="dropdown-menu">
-                <li><a href="clientarea.php?action=details">{$LANG.editaccountdetails}</a></li>
-                {if $condlinks.updatecc}<li><a href="clientarea.php?action=creditcard">{$LANG.navmanagecc}</a></li>{/if}
-                <li><a href="clientarea.php?action=contacts">{$LANG.clientareanavcontacts}</a></li>
-                {if $condlinks.addfunds}<li><a href="clientarea.php?action=addfunds">{$LANG.addfunds}</a></li>{/if}
-                <li><a href="clientarea.php?action=emails">{$LANG.navemailssent}</a></li>
-                <li><a href="clientarea.php?action=changepw">{$LANG.clientareanavchangepw}</a></li>
-                <li class="divider"></li>
-                <li><a href="logout.php">{$LANG.logouttitle}</a></li>
-              </ul>
-            </li>
-          </ul>
+		  <ul class="nav pull-right">
+			<li class="dropdown">
+			  <a href="#" class="dropdown-toggle" data-toggle="dropdown">{$LANG.hello}, {$loggedinuser.firstname}!&nbsp;<b class="caret"></b></a>
+			  <ul class="dropdown-menu">
+				<li><a href="clientarea.php?action=details">{$LANG.editaccountdetails}</a></li>
+				{if $condlinks.updatecc}<li><a href="clientarea.php?action=creditcard">{$LANG.navmanagecc}</a></li>{/if}
+				<li><a href="clientarea.php?action=contacts">{$LANG.clientareanavcontacts}</a></li>
+				{if $condlinks.addfunds}<li><a href="clientarea.php?action=addfunds">{$LANG.addfunds}</a></li>{/if}
+				<li><a href="clientarea.php?action=emails">{$LANG.navemailssent}</a></li>
+				<li><a href="clientarea.php?action=changepw">{$LANG.clientareanavchangepw}</a></li>
+				<li class="divider"></li>
+				<li><a href="logout.php">{$LANG.logouttitle}</a></li>
+			  </ul>
+			</li>
+		  </ul>
 {else}
-          <ul class="nav">
-            <li><a href="announcements.php">{$LANG.announcementstitle}</a></li>
-          </ul>
+		  <ul class="nav">
+			<li><a href="announcements.php">{$LANG.announcementstitle}</a></li>
+		  </ul>
           
-          <ul class="nav">
-            <li><a href="knowledgebase.php">{$LANG.knowledgebasetitle}</a></li>
-          </ul>
+		  <ul class="nav">
+			<li><a href="knowledgebase.php">{$LANG.knowledgebasetitle}</a></li>
+		  </ul>
           
-          <ul class="nav">
-            <li><a href="serverstatus.php">{$LANG.networkstatustitle}</a></li>
-          </ul>
+		  <ul class="nav">
+			<li><a href="serverstatus.php">{$LANG.networkstatustitle}</a></li>
+		  </ul>
           
-          <ul class="nav">
-            <li><a href="affiliates.php">{$LANG.affiliatestitle}</a></li>
-          </ul>
+		  <ul class="nav">
+			<li><a href="affiliates.php">{$LANG.affiliatestitle}</a></li>
+		  </ul>
           
-          <ul class="nav">
-            <li><a href="contact.php">{$LANG.contactus}</a></li>
-          </ul>
+		  <ul class="nav">
+			<li><a href="contact.php">{$LANG.contactus}</a></li>
+		  </ul>
 
-          <ul class="nav pull-right">
-            <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">{$LANG.account}&nbsp;<b class="caret"></b></a>
-              <ul class="dropdown-menu">
-                <li><a href="clientarea.php">{$LANG.login}</a></li>
-                <li><a href="register.php">{$LANG.register}</a></li>
-                <li class="divider"></li>
-                <li><a href="pwreset.php">{$LANG.forgotpw}</a></li>
-              </ul>
-            </li>
-          </ul>
+		  <ul class="nav pull-right">
+			<li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">{$LANG.account}&nbsp;<b class="caret"></b></a>
+			  <ul class="dropdown-menu">
+				<li><a href="clientarea.php">{$LANG.login}</a></li>
+				<li><a href="register.php">{$LANG.register}</a></li>
+				<li class="divider"></li>
+				<li><a href="pwreset.php">{$LANG.forgotpw}</a></li>
+			  </ul>
+			</li>
+		  </ul>
 {/if}
 
         </div><!-- /.nav-collapse -->

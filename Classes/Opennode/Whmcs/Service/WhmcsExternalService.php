@@ -127,6 +127,44 @@ class WhmcsExternalService implements WhmcsExternalServiceInterface {
 
         return false;
     }
+    
+        /**
+     * Function to remove credit from user
+     */
+    function createInvoice($clientId, $amount, $is_taxed, $desc) {
+        if ($amount < 0) {
+            $this -> logActivity("Error: The client's saldo over the last month is positive. Not generating an invoice");
+            return;
+        } elseif ($amount == 0) {
+            $this -> logActivity("Warning: The client's saldo over the last month is 0. Not generating an invoice");
+            return;
+        }
+        $postfields["action"] = "createinvoice";
+        $postfields["userid"] = $clientId;
+
+        $postfields["date"] = date('Ymd');
+        $postfields["duedate"] = date('Ymd', strtotime('+2 week'));
+
+        $postfields["sendinvoice"] = false;
+
+        $postfields["itemamount1"] = $amount;
+        $postfields["itemdescription1"] = $desc;
+        $postfields["itemtaxed1"] = $is_taxed;
+
+        $clientData = $this -> callAPI($postfields);
+
+        if ($clientData['result'] == "success") {
+            $this -> logActivity("Successfully created invoice for " . $clientId . " (" .$amount . ")");
+            return true;
+        } else if ($clientData['result'] == "error") {
+            $this -> logActivity("Error creating invoice for " . $clientId . " (" .$amount .
+                                            "). Error:" . $clientData['message']);
+            return false;
+        }
+
+        return false;
+    }
+    
 
 }
 ?>
