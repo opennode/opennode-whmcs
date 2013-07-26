@@ -3,7 +3,6 @@ namespace Opennode\Whmcs\Service;
 
 interface WhmcsExternalServiceInterface {
 
-  
     public function logActivity($msg);
 
     /**
