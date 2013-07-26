@@ -112,5 +112,18 @@ class HookService {
         return array('omsdata'=>$data);
     }
 
+
+/**
+     * Function that returns if a logged in user belongs to a subscriber user group.
+     */
+    public static function addOmsClientGroupAreaPage($vars) {
+        global $oms_monthly_client_group;
+        $userGroupId = $_SESSION['groupid'];
+        //Get products prices
+        $whmcsDbService = new \Opennode\Whmcs\Service\WhmcsDbService();
+        $subscriber_group = $whmcsDbService -> getClientGroupId(oms_monthly_client_group);
+        return array('is_not_subscriber'=> $userGroupId != $subscriber_group);
+    }
+
 }
 ?>
