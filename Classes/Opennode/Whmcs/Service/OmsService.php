@@ -19,8 +19,9 @@ class OmsService {
      *
      * @return boolean if account creation was successful
      */
-    function createOmsAccount($username, $password) {
-        $command = '/bin/adduser?arg=' . $username . '&arg=' . $password;
+    function createOmsAccount($username, $password, $userid) {
+        $command = '/bin/adduser?arg=' . $username . '&arg=' . $password .
+                        '&arg=-i&arg=' . $userid;
         $resp = $this -> omsCommand($command);
         if ($resp != -1) {
             //Check if response contains message, that username already exists
