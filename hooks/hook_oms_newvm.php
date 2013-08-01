@@ -82,7 +82,7 @@ function create_new_vm_with_invoice($vars) {
 					if (stristr($product['name'], "ram"))
 						$vmData['memory'] = $product['count'] * $amount;
 					if (stristr($product['name'], "storage"))
-						$vmData['diskspace'] = $product['count'] * $amount;
+						$vmData['diskspace'] = $product['count'] * $amount * 1024;  // OMS expects values in MB
 
 				}
 
