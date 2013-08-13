@@ -1,49 +1,27 @@
-<div class="halfwidthcontainer">
-
-{include file="$template/pageheader.tpl" title=$LANG.login}
-
-{if $incorrect}
-<div class="alert alert-error textcenter">
-    <p>{$LANG.loginincorrect}</p>
-</div>
-{/if}
-
-<form method="post" action="{$systemsslurl}dologinoms.php" class="form-stacked" name="frmlogin">
-
-<div class="logincontainer">
-
-    <fieldset class="control-group">
-
-	    <div class="control-group">
-		    <label class="control-label" for="username">{$LANG.loginemail}:</label>
-			<div class="controls">
-			    <input class="input-xlarge" name="username" id="username" type="text" />
-			</div>
-		</div>
-
-		<div class="control-group">
-		    <label class="control-label" for="password">{$LANG.loginpassword}:</label>
-			<div class="controls">
-			    <input class="input-xlarge" name="password" id="password" type="password"/>
-			</div>
-		</div>
-
-        <div align="center">
-		  <div class="loginbtn"><input type="submit" class="btn btn-primary btn-large" value="{$LANG.loginbutton}" /></div>
-          <div class="rememberme"><input type="checkbox" name="rememberme"{if $rememberme} checked="checked"{/if} /> <strong>{$LANG.loginrememberme}</strong></div>
-          <br />
-          <br />
-          <p><a href="pwreset.php">{$LANG.loginforgotteninstructions}</a></p>
-        </div>
-
-	</fieldset>
-
+<div id="information_box" style="display:none;">
+    <br />
+    <h3 align="center">Oops, you did something wrong, please log out and then log in again to see the console.
+        If problem presists please <a href="/submitticket.php">contact support</a>.
+    </h3>
 </div>
 
-</form>
+<div id="console_container">
+    {literal}
+    <script type="text/javascript">//some javascipt here
+    jQuery.ajax({
+             url:    "console/bin/id",
+             success: function(result) {
+                        // we expect the worst
+                      },
+             error: function(result) {
+                $("#console_container").css("display", "none");
+                $("#information_box").css("display", "");
+             },
+             async:   false
+        });
+    </script>
+    {/literal}
 
-<script language="javascript">
-document.frmlogin.username.focus();
-</script>
-
+    <iframe src="{$oms_link}/index.html?embedded=true" style="border: 1px solid lightgray; width: 100%; height: 750px"/>
 </div>
+
