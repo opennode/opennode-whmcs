@@ -23,9 +23,9 @@
 
 <div id="whmcsheader">
     <div class="whmcscontainer">
-        <div id="whmcstxtlogo"><a href="cart.php">{$companyname}</a></div>
+        <div id="whmcstxtlogo"><a href="/">{$companyname}</a></div>
         <div id="whmcsimglogo">
-            <a href="cart.php"><img src="templates/{$template}/img/whmcslogo.png" alt="{$companyname}" /></a>
+            <a href="/"><img src="templates/{$template}/img/whmcslogo.png" alt="{$companyname}" /></a>
          {*   <a href="{$oms_link}" style="float: right" target="_blank"><img src="{$oms_img}" alt="{$LANG.omsconsole}" /></a> *}
         </div>
     </div>
@@ -41,7 +41,7 @@
         </a>
         <div class="nav-collapse">
 		<ul class="nav">
-			<li><a href="{if $loggedin}clientarea{else}cart{/if}.php">{$LANG.hometitle}</a></li>
+			<li><a href="{if $loggedin}clientarea.php{else}/{/if}">{$LANG.hometitle}</a></li>
 		</ul>
 {if $loggedin}
 
@@ -81,17 +81,18 @@
 			</li>
 		  </ul>
 
+{*
 		  <ul class="nav">
 			<li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">{$LANG.navsupport}&nbsp;<b class="caret"></b></a>
 			  <ul class="dropdown-menu">
 				<li><a href="supporttickets.php">{$LANG.navtickets}</a></li>
 				<li><a href="knowledgebase.php">{$LANG.knowledgebasetitle}</a></li>
 				<li><a href="downloads.php">{$LANG.downloadstitle}</a></li>
-				{* <li><a href="serverstatus.php">{$LANG.networkstatustitle}</a></li> *}
+				<li><a href="serverstatus.php">{$LANG.networkstatustitle}</a></li>
 			  </ul>
 			</li>
 		  </ul>
-{*
+*}
 		  <ul class="nav">
 			<li><a href="submitticket.php">{$LANG.navopenticket}</a></li>
 		  </ul>
@@ -99,7 +100,7 @@
 		  {if $condlinks.affiliates}<ul class="nav">
             <li><a href="affiliates.php">{$LANG.affiliatestitle}</a></li>
 		  </ul>{/if}
-*}
+
 		  <ul class="nav pull-right">
 			<li class="dropdown">
 			  <a href="#" class="dropdown-toggle" data-toggle="dropdown">{$LANG.hello}, {$loggedinuser.firstname}!&nbsp;<b class="caret"></b></a>
@@ -116,6 +117,7 @@
 			</li>
 		  </ul>
 {else}
+{*
 		  <ul class="nav">
 			<li><a href="announcements.php">{$LANG.announcementstitle}</a></li>
 		  </ul>
@@ -131,8 +133,8 @@
 		  <ul class="nav">
 			<li><a href="affiliates.php">{$LANG.affiliatestitle}</a></li>
 		  </ul>
-          
-		  <ul class="nav">
+*}
+		  <ul class="nav pull-right">
 			<li><a href="contact.php">{$LANG.contactus}</a></li>
 		  </ul>
 

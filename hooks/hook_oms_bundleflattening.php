@@ -21,7 +21,7 @@ function hook_bundleflattening($vars) {
 
 	$productConfGroupId = createOrUpdateCongfigOptions();
 	// must remove all, because we have no knowledge, which bundle products have been removed
-	deleteProducts($oms_generated_group_id);
+	// deleteProducts($oms_generated_group_id);
 
 	$bundles = getBundlesWithUpdatedData();
 	if (!$bundles)
@@ -30,8 +30,8 @@ function hook_bundleflattening($vars) {
 
 		$values["type"] = "server";
 		$values["gid"] = $oms_generated_group_id;
-        $values["name"] = $bundle[name];
-        $values["tax"] = 1;
+		$values["name"] = $bundle[name];
+		$values["tax"] = 1;
 		$values["description"] = $bundle[description];
 		$values["order"] = $bundle["sortorder"];
 		$values["paytype"] = "onetime";

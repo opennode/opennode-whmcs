@@ -22,14 +22,19 @@ $_LANG['eur'] = "EUR";
 
 $_LANG['navservicesorderbundles'] = "Purchase credit";
 
-$_LANG['omsclientusage'] = "Months usage stats";
+$_LANG['omsclientusage'] = "Monthly usage statistics";
+$_LANG['clientUsage']['period'] = "Period";
+$_LANG['clientUsage']['server'] = "server";
+$_LANG['clientUsage']['servers'] = "servers";
+$_LANG['clientUsage']['resources'] = "Resources";
 $_LANG['clientUsage']['startTime'] = "Start time";
 $_LANG['clientUsage']['activeHours'] = "Active hours";
 $_LANG['clientUsage']['nrOfVms'] = "Nr of VMs";
-$_LANG['clientUsage']['cores'] = "Cores";
+$_LANG['clientUsage']['cores'] = "cores";
+$_LANG['clientUsage']['core'] = "core";
 $_LANG['clientUsage']['disc'] = "Disc";
 $_LANG['clientUsage']['memory'] = "Memory";
-$_LANG['clientUsage']['cost'] = "Cost";
-$_LANG['clientUsage']['price'] = "Price";
+$_LANG['clientUsage']['cost'] = "Monthly Costs";
+$_LANG['clientUsage']['price'] = "Period cost";
 $_LANG['clientUsage']['priceMo'] = "EUR/mo";
 ?>

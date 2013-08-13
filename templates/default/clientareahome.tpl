@@ -24,7 +24,7 @@
                     <h2>{$LANG.accountoverview}</h2>
                 </div>
             </div>
-            <p>{$LANG.statscurrentcredit}: <strong>{$omsdata.currentcredit|round:"2"}</strong> {$LANG.eur}</p>
+            <p>{$LANG.statscurrentcredit}: <strong>{$omsdata.currentcredit|string_format:"%.2f"}</strong> {$LANG.eur}</p>
             <p>{$LANG.statsnrofvms}: <strong>{$omsdata.number_of_vms}</strong></p>
             <p>{$LANG.statsnrofcores}: <strong>{$omsdata.cores}</strong></p>
             <p>{$LANG.statstotalram}: <strong>{$omsdata.memory}</strong> {$LANG.gb}</p>
@@ -58,10 +58,6 @@
 </div>
 {/if}
 
-
-<div class="styled_title">
-    <h3>{$LANG.omsclientusage}</h3>
-</div>
 
 {include file='default/omsclientusage.tpl'}
 
