@@ -30,7 +30,7 @@ class HookService {
         if ($username) {
             $omsHelper = new \Opennode\Whmcs\Service\OmsService($oms_hostname, $oms_user, $oms_password);
 
-            $isSuccess = $omsHelper -> createOmsAccount($username, $password);
+            $isSuccess = $omsHelper -> createOmsAccount($username, $password, $userid);
             if ($isSuccess) {
                 error_log("Created OMS user: " . $username);
             } else {
@@ -77,7 +77,7 @@ class HookService {
     public static function addOmsUsageClientAreaPage($vars) {
         global $oms_usage_db, $product_core_name, $product_disk_name, $product_memory_name;
 
- 		$userId = $_SESSION['uid'];
+        $userId = $_SESSION['uid'];
         //Get products prices
         $hours_per_month = 720;
         $p_core = getProductPriceByName($product_core_name) / $hours_per_month;

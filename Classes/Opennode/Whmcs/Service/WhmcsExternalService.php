@@ -24,7 +24,7 @@ class WhmcsExternalService implements WhmcsExternalServiceInterface {
      * Updates client credit with external api, internal did not work.
      */
     function updateClientCreditBalance($userId) {
-    	
+
         $this -> logActivity("Updating client $userId");
         $clientCredit = 0;
         $postfields["action"] = "getcredits";
@@ -104,7 +104,7 @@ class WhmcsExternalService implements WhmcsExternalServiceInterface {
      * Function to remove credit from user
      */
     function removeCreditForUserId($userId, $username, $amount, $desc) {
-    	error_log("Depreached: WHMCS rounds users credit.");
+        error_log("Depreached: WHMCS rounds users credit.");
         if ($amount > 0) {
             $this -> logActivity("Error. Tried to ADD credit to userId:" . $userId);
             return;
@@ -127,8 +127,8 @@ class WhmcsExternalService implements WhmcsExternalServiceInterface {
 
         return false;
     }
-    
-        /**
+
+    /**
      * Function to remove credit from user
      */
     function createInvoice($clientId, $amount, $is_taxed, $desc) {
@@ -154,17 +154,15 @@ class WhmcsExternalService implements WhmcsExternalServiceInterface {
         $clientData = $this -> callAPI($postfields);
 
         if ($clientData['result'] == "success") {
-            $this -> logActivity("Successfully created invoice for " . $clientId . " (" .$amount . ")");
+            $this -> logActivity("Successfully created invoice for " . $clientId . " (" . $amount . ")");
             return true;
         } else if ($clientData['result'] == "error") {
-            $this -> logActivity("Error creating invoice for " . $clientId . " (" .$amount .
-                                            "). Error:" . $clientData['message']);
+            $this -> logActivity("Error creating invoice for " . $clientId . " (" . $amount . "). Error:" . $clientData['message']);
             return false;
         }
 
         return false;
     }
-    
 
 }
 ?>

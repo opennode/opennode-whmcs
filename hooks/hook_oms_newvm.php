@@ -9,7 +9,7 @@ function create_new_vm_with_invoice($vars) {
 	global $oms_usage_db, $oms_templates_mapping, $vm_default_nameservers;
 	$invoiceId = $vars['invoiceid'];
 
-	logActivity("Starting to POST new vm data and adding credit for invoice:" . $invoiceId);
+	logActivity("Starting processing paid invoice:" . $invoiceId);
 
 	$invoice = getInvoiceById($invoiceId);
 
@@ -19,11 +19,13 @@ function create_new_vm_with_invoice($vars) {
 		logActivity("No username found for id: $userId");
 		return;
 	}
-	//On invoice payment it is needed that credit stays on account. It is automattically removed, manually added:
+	// On invoice payment it is needed that credit stays on account. It is automattically removed, so need to add it manually
+	// XXX yes, it's an ugly hack
 	$amountPaid = $invoice['total'];
 	$items = $invoice['items'];
 	foreach ($items['item'] as $item) {
-		$boughtVmProduct = false; // to track if the item is a VM or a credit package
+		$boughtVmProduct = false;
+		// to track if the item is a VM or a credit package
 		$vmData = array();
 		$itemId = $item['relid'];
 		$clientproduct = getClientsProduct($userId, $itemId);
@@ -52,7 +54,7 @@ function create_new_vm_with_invoice($vars) {
 			}
 		}
 		if ($boughtVmProduct) {
-			if (!$vmData['template'] ) {
+			if (!$vmData['template']) {
 				logActivity("Error. No template found for product id:" . $itemId);
 				continue;
 			}
@@ -80,7 +82,7 @@ function create_new_vm_with_invoice($vars) {
 					if (stristr($product['name'], "ram"))
 						$vmData['memory'] = $product['count'] * $amount;
 					if (stristr($product['name'], "storage"))
-						$vmData['diskspace'] = $product['count'] * $amount;
+						$vmData['diskspace'] = $product['count'] * $amount * 1024;  // OMS expects values in MB
 
 				}
 
@@ -121,7 +123,7 @@ function create_new_vm_with_invoice($vars) {
 	$desc = "Adding credit for invoice:" . $invoiceId;
 	addCreditForUserId($userId, $username, $amountPaid, $desc);
 	updateClientCreditBalance($userId);
-	
+
 	/*logActivity("Removing orders for userId:" . $userId);
 	$orders = getUsersOrders($userId);
 	if ($orders) {
