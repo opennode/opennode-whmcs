@@ -10,7 +10,7 @@ $_LANG['console'] = "Console";
 $_LANG['cartbrowse'] = "Please select a credit package.";
 $_LANG['vmofferintrotext'] = 'VM Offer package offers a shortcut for both purchasing credit and creating a VM.';
 
-$_LANG['statscurrentcredit'] = "Current credit";
+$_LANG['statscurrentcredit'] = "Credit left (updated hourly)";
 $_LANG['statsnrofvms'] = "Number of VMs";
 $_LANG['statsnrofcores'] = "Total active CPU cores";
 $_LANG['statstotalram'] = "Total active RAM";
