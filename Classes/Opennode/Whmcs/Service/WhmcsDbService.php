@@ -30,17 +30,21 @@ class WhmcsDbService {
     }
 
     /**
-     * Get clients taxrate
+     * Get client's taxrate
      */
     public static function getClientsTaxrate($clientId) {
         if (is_numeric($clientId)) {
-            $sql = "select taxrate from tbltax where country=(select country from tblclients where id=" . $clientId . ")";
-            $query = mysql_query($sql);
-            if ($query) {
-                $row = mysql_fetch_row($query);
-                if ($row)
-                    return $row[0];
-            }
+			$te_sql = "select taxexempt from tblclients where id=" . $clientId;
+			$te_query = mysql_query($te_sql);
+            if ($te_query) {
+                $row = mysql_fetch_row($te_query);
+                if ($row) {
+                	if ($row[0] == 'on') {
+                		return 0;
+                	} else 
+                		return 20;  // hardcoded VAT
+				}
+			}
         }
     }
 
@@ -96,29 +100,42 @@ class WhmcsDbService {
         }
         return $retval;
     }
-
-    /**
-     * Get id of the specified client group.
-     */
-    function getClientGroupId($client_group_name) {
-        $result = mysql_query("SELECT id FROM tblclientgroups WHERE groupname='" . $client_group_name . "'");
+	
+	/**
+	 * Get id of the specified client group. 
+	 */
+	function getClientGroupId($client_group_name) {
+        $result = mysql_query("SELECT id FROM tblclientgroups WHERE groupname='". $client_group_name ."'");
         $grab_customfieldid = mysql_fetch_row($result);
         return $grab_customfieldid[0];
     }
-
-    /**
-     * Return list of client id's belonging to a defined customer group.
-     */
-    function getClientsByGroup($client_group_id) {
-        $result = mysql_query("SELECT id FROM tblclients WHERE groupid='" . $client_group_id . "'");
-        $resultsAsArray = array();
+	
+	/**
+	 * Return list of client id's belonging to a defined customer group.
+	 */
+	function getClientsByGroup($client_group_id) {
+		$result = mysql_query("SELECT id FROM tblclients WHERE groupid='". $client_group_id ."'");
+		$resultsAsArray = array();
         if ($result) {
             while ($row = mysql_fetch_assoc($result)) {
                 $resultsAsArray[] = $row;
             }
         }
         return $resultsAsArray;
-    }
-
+	}
+	
+	/**
+	 * Return a list of all client usernames
+	 */
+	function getClientsUsernames() {
+		$result = mysql_query("SELECT id FROM tblclients");
+		$resultsAsArray = array();
+        if ($result) {
+            while ($row = mysql_fetch_assoc($result)) {
+                $resultsAsArray[] = $row;
+            }
+        }
+        return $resultsAsArray;
+	}
 }
 ?>
