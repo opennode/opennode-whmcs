@@ -7,8 +7,9 @@ BACKUPDIR=/opt/backups/whmcs
 # perform backup of the existing system
 foldername=whmcs-$(date +"%m-%d-%Y")
 
-echo Backing up existing installation: $WHMCS -> $BACKUPDIR/$foldername
-cp -vfr $WHMCS $BACKUPDIR/$foldername
+echo "Backing up existing installation: $WHMCS -> $BACKUPDIR/$foldername"
+mkdir -p $BACKUPDIR/$foldername
+rsync -av $WHMCS $BACKUPDIR/$foldername/
 
 # update hooks
 rsync -av --exclude 'oms_config.php' hooks $WHMCS/includes/
