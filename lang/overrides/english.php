@@ -30,11 +30,13 @@ $_LANG['clientUsage']['resources'] = "Resources";
 $_LANG['clientUsage']['startTime'] = "Start time";
 $_LANG['clientUsage']['activeHours'] = "Active hours";
 $_LANG['clientUsage']['nrOfVms'] = "Nr of VMs";
-$_LANG['clientUsage']['cores'] = "cores";
+$_LANG['clientUsage']['cores'] = "Active cores";
 $_LANG['clientUsage']['core'] = "core";
-$_LANG['clientUsage']['disc'] = "Disc";
-$_LANG['clientUsage']['memory'] = "Memory";
+$_LANG['clientUsage']['disc'] = "Used disk";
+$_LANG['clientUsage']['memory'] = "Active memory";
 $_LANG['clientUsage']['cost'] = "Monthly Costs";
 $_LANG['clientUsage']['price'] = "Period cost";
 $_LANG['clientUsage']['priceMo'] = "EUR/mo";
+$_LANG['clientUsage']['no_resource'] = "No purchased resources";
+
 ?>
