@@ -239,13 +239,13 @@ ORDER BY conf.username, conf.timestamp";
      */
     public static function applyTax($clientId, $amount) {
         $taxrate = \Opennode\Whmcs\Service\WhmcsDbService::getClientsTaxrate($clientId);
-        $taxrate = ($taxrate) ? $taxrate : 0;
-        // Taxrule: Products already contain tax 20%. Have to remove 20% from amount for Clients who has 0% tax.
-        $vat = 20;
-        $taxrate = (empty($taxrate)) ? -$vat : 0;
-
-        $amountWithTax = $amount + $amount * $taxrate / 100;
-        return $amountWithTax;
+		$vat = 20;
+        if ($taxrate < $vat) {
+        	$amountWithoutTax = $amount / (100 + $vat - $taxrate) * 100;
+        	return $amountWithoutTax;
+		} else {
+			return $amount;
+		}
     }
 
     /*
