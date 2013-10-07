@@ -24,28 +24,29 @@ class OmsReductionService {
     }
 
     public function reduce_users_credit() {
-        $this -> whmcsExternalService -> logActivity("Starting clients credit reduction CRON job.");
+        $this -> whmcsExternalService -> logActivity("Starting credit reduction job.");
         $result = $this -> queryForConfChanges();
         $parsedResult = $this -> parseLegacyArrayForData($result);
 
         $this -> applyCreditRemovingFromUsersAmounts($parsedResult['usersAmountsToRemove']);
         $this -> updateRecordIds($parsedResult['recordIdsToUpdate']);
-        $this -> whmcsExternalService -> logActivity("Client credit reduction CRON job ended.");
+        $this -> whmcsExternalService -> logActivity("Credit reduction job has ended.");
     }
 
     public function parseLegacyArrayForData($result) {
-
+		$this -> whmcsExternalService -> logActivity("Starting configuration log parsing");
         //Get products prices
         $p_core = $this -> whmcsDbService -> getProductPriceByName($this -> product_core_name);
         $p_disk = $this -> whmcsDbService -> getProductPriceByName($this -> product_disk_name);
         $p_memory = $this -> whmcsDbService -> getProductPriceByName($this -> product_memory_name);
 
         if (!$p_core || !$p_disk || !$p_memory) {
-            $this -> whmcsExternalService -> logActivity("Error: Product prices not set.");
+            $this -> whmcsExternalService -> logActivity("Error: Product prices are not set.");
             return;
         } else {
 
-            $this -> whmcsExternalService -> logActivity("Using product prices for calculations: Cores:" . $p_core . ". Disk:" . $p_disk . ".Memory:" . $p_memory);
+            $this -> whmcsExternalService -> logActivity("Product prices: Core (1 core)= " . $p_core . 
+            	", disk (1GB) = " . $p_disk . ", Memory (1GB) = " . $p_memory);
         }
 
         $usersAmountsToRemove = array();
@@ -72,7 +73,8 @@ class OmsReductionService {
                         $recordIdsToUpdate[] = $prevRecord['id'];
                         //$this -> whmcsExternalService -> logActivity("Adding " . $addAmountToUser . " EUR to user :" . $username . " for " . $hoursInBetween . " hours. Adding Id:" . $prevRecord['id'] . " in array recordIdsToUpdate. Amount for month is:" . $amount);
                     } else {
-                        $this -> whmcsExternalService -> logActivity("Switching users:" . $prevRecord['username'] . "->" . $currRecord['username']);
+                        $this -> whmcsExternalService -> logActivity("Switching users when parsing logs:" . $prevRecord['username'] 
+                        		. "->" . $currRecord['username']);
                     }
                 }
                 $prevRecord = $currRecord;
@@ -162,10 +164,8 @@ ORDER BY conf.username, conf.timestamp";
         $p_memory = $this -> whmcsDbService -> getProductPriceByName($this -> product_memory_name);
 
         if (!$p_core || !$p_disk || !$p_memory) {
-            $this -> whmcsExternalService -> logActivity("Error: Product prices not set.");
+            $this -> whmcsExternalService -> logActivity("Error: Product prices are not set.");
             return;
-        } else {
-            //$this -> whmcsExternalService -> logActivity("Using product prices for calculations: Cores:" . $p_core . ". Disk:" . $p_disk . ".Memory:" . $p_memory);
         }
 
         if ($result) {
@@ -214,7 +214,7 @@ ORDER BY conf.username, conf.timestamp";
             $sql = "UPDATE " . $table . " SET processed=true WHERE id IN(" . implode(',', $recordIdsToUpdate) . ')';
             $result = mysql_query($sql);
             if ($result) {
-                $this -> whmcsExternalService -> logActivity("Successfully updated " . $table . " with ids:" . implode(',', $recordIdsToUpdate));
+                $this -> whmcsExternalService -> logActivity("Successfully updated " . $table . ". Updated " . sizeof($recordIdsToUpdate) . " entries.");
             } else {
                 $this -> whmcsExternalService -> logActivity("Error updating " . $table);
             }
@@ -225,11 +225,14 @@ ORDER BY conf.username, conf.timestamp";
         foreach ($usersAmountsToRemove as $username => $amountToRemove) {
             $userid = $this -> whmcsDbService -> getUserid($username);
             if ($userid) {
-                $amountToRemoveWithTax = self::applyTax($userid, $amountToRemove);
-                $this -> whmcsExternalService -> logActivity("Going to remove credit for user:" . $username . ". Amount: " . $amountToRemoveWithTax . " EUR. Without tax:" . $amountToRemove);
-                $this -> whmcsDbService -> removeCreditFromClient($userid, $username, -$amountToRemoveWithTax, "OMS_USAGE:(" . date('H:i:s', time()) . ")[removed:" . round($amountToRemoveWithTax, 5) . " EUR] ");
+                $amountToRemoveTaxAware = self::applyTax($userid, $amountToRemove);
+                $this -> whmcsExternalService -> logActivity("Going to remove credit for username: " . $username . 
+                	". Amount: " . $amountToRemoveTaxAware . " EUR. With VAT: " . $amountToRemove);
+                $this -> whmcsDbService -> removeCreditFromClient($userid, $username, -$amountToRemoveTaxAware,
+                		"OMS_USAGE:(" . date('H:i:s', time()) . ")[removed:" . round($amountToRemoveTaxAware, 5) . " EUR] ");
             } else {
-                $this -> whmcsExternalService -> logActivity("Userid not found for username " . $username);
+                $this -> whmcsExternalService -> logActivity("Username " . $username .
+                	" is missing from WHMCS DB, yet present in the usage table. Consider a cleanup.");
             }
         }
     }
