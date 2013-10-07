@@ -1,3 +1,7 @@
+<div class="styled_title">
+        <h3>{$LANG.clientUsage.activitylog}</h3>
+  </div>
+<br />
 <table class="table table-striped table-framed">
     <thead>
         <tr>
@@ -25,7 +29,7 @@
 	            <td class="textcenter">{$conf.disk|round:"2"} {$LANG.gb}</td>
 	            {/if}
 	            <td class="textcenter">{$conf.cost|string_format:"%01.5f"} {$LANG.eur}</td>
-	            <td class="textcenter">{$conf.price|string_format:"%01.5f"} {$LANG.clientUsage.priceMo}</td>
+	            <td class="textcenter">{$conf.price|string_format:"%01.2f"} {$LANG.clientUsage.priceMo}</td>
 	        </tr>
         {/foreach}
     </tbody>

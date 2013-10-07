@@ -38,5 +38,6 @@ $_LANG['clientUsage']['cost'] = "Monthly Costs";
 $_LANG['clientUsage']['price'] = "Period cost";
 $_LANG['clientUsage']['priceMo'] = "EUR/mo";
 $_LANG['clientUsage']['no_resource'] = "No purchased resources";
+$_LANG['clientUsage']['activitylog'] = "Activity Log (this month)";
 
 ?>
