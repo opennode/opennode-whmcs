@@ -95,7 +95,7 @@ class OmsReductionService {
         $sql = "select conf.id, conf.username, conf.timestamp, conf.cores, conf.disk, conf.memory, conf.number_of_vms from
 " . $table . " as conf
 where conf.processed = false
-AND timestamp <= DATE_SUB(now(), INTERVAL 1 HOUR)
+AND timestamp <= now()
 ORDER BY conf.username, conf.timestamp";
 
         $result = mysql_query($sql);
@@ -225,7 +225,7 @@ ORDER BY conf.username, conf.timestamp";
         foreach ($usersAmountsToRemove as $username => $amountToRemove) {
             $userid = $this -> whmcsDbService -> getUserid($username);
             if ($userid) {
-                $amountToRemoveWithTax = self::applyTax($clientId, $amountToRemove);
+                $amountToRemoveWithTax = self::applyTax($userid, $amountToRemove);
                 $this -> whmcsExternalService -> logActivity("Going to remove credit for user:" . $username . ". Amount: " . $amountToRemoveWithTax . " EUR. Without tax:" . $amountToRemove);
                 $this -> whmcsDbService -> removeCreditFromClient($userid, $username, -$amountToRemoveWithTax, "OMS_USAGE:(" . date('H:i:s', time()) . ")[removed:" . round($amountToRemoveWithTax, 5) . " EUR] ");
             } else {

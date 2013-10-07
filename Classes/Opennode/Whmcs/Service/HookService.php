@@ -91,6 +91,7 @@ class HookService {
         }
 
         $username = get_username($userId);
+		$balance_limit = get_balance_limit($userId);
 
         $table = $oms_usage_db . ".CONF_CHANGES";
 
@@ -108,7 +109,7 @@ class HookService {
                 $data['vm_cost'] = \Opennode\Whmcs\Service\OmsReductionService::applyTax($userId, $amount);
             }
         }
-        $data['currentcredit'] = getCreditForUserId($userId);
+        $data['currentcredit'] = getCreditForUserId($userId) + $balance_limit;
         return array('omsdata'=>$data);
     }
 

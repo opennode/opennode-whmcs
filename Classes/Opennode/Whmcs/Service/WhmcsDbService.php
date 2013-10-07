@@ -137,5 +137,21 @@ class WhmcsDbService {
         }
         return $resultsAsArray;
 	}
+	
+	/*
+	 Extract users Balance limit from the custom field with a specified name ('Balance limit').
+	 */
+	function getBalanceLimit($userid) {
+        $result = mysql_query("SELECT id FROM tblcustomfields WHERE fieldname='Balance limit'");
+        $grab_customfieldid = mysql_fetch_row($result);
+        $username_customfieldid = $grab_customfieldid[0];
+
+        // get Balance limit  value
+        $result = mysql_query("SELECT value FROM tblcustomfieldsvalues WHERE fieldid = " . $username_customfieldid . " and relid = " . $userid);
+        $bfield = mysql_fetch_row($result);
+        $blimit = $bfield[0];
+        return $blimit;
+	}
+	
 }
 ?>
