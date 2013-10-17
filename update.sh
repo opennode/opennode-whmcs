@@ -23,3 +23,6 @@ rsync -av lang $WHMCS/
 rsync -av smarty $WHMCS/includes/
 # update templates
 rsync -av templates $WHMCS/
+# update logo
+# replace logo with a correct one
+#rsync -av logos/levira.png $WHMCS/templates/default/img/whmcslogo.png
