@@ -10,11 +10,23 @@ except ImportError:
     print "You are missing a requests library. Please install (e.g. pip install requests) and run again."
     sys.exit(1)
 
+try:
+    import argparse
+except:
+    print "You are missing argparse module. With py26 it can be installed on 'yum install python-argparse'"
+    sys.exit(1)
+
+parser = argparse.ArgumentParser(description='Collect VM stats')
+parser.add_argument("oms_url")
+parser.add_argument("oms_username")
+parser.add_argument("oms_password")
+args = parser.parse_args() 
+
 # MODIFY TO MATCH YOUR INSTALLATION
-OMS_URL="http://oms-vm/"
+OMS_URL=args.oms_url
 COMPUTES_INFO="/computes/?depth=1&attrs=hostname,license_activated,owner,memory,num_cores,diskspace,state,ipv4_address"
-OMS_USERNAME="opennode"
-OMS_PASSWORD="password"
+OMS_USERNAME=args.oms_username
+OMS_PASSWORD=args.oms_password
 FILENAME="vm-summary.csv"
 DEBUG=False
 
