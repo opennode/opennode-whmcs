@@ -1,3 +1,6 @@
 .DS_Store
 /.settings/
 .*.swp
+*.pyc
+.project
+.pydevproject
