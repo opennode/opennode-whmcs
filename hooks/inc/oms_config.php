@@ -13,6 +13,8 @@ $oms_usage_db = "OMS_USAGE";
 $whmcs_admin_user = "admin";
 $whmcs_admin_password = "password";
 $whmcs_api_url = "http://localhost/includes/api.php";
+$whmcs_code_folder = "/var/www/html/whmcs/";
+$whmcs_upload_folder = "tmp_secret_folder/inside/whmcs_code_folder";
 
 $product_core_name="Core";
 $product_disk_name="10GB Storage";

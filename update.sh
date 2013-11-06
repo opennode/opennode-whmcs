@@ -17,6 +17,8 @@ rsync -av --exclude 'oms_config.php' hooks $WHMCS/includes/
 rsync -av Classes $WHMCS/
 # update support scripts
 rsync -av *.php $WHMCS/
+# update support scripts
+rsync -av *.py $WHMCS/
 # update language
 rsync -av lang $WHMCS/
 # update smarty functions
@@ -26,3 +28,8 @@ rsync -av templates $WHMCS/
 # update logo
 # replace logo with a correct one
 #rsync -av logos/levira.png $WHMCS/templates/default/img/whmcslogo.png
+
+# warning for vmusagestats
+echo "Please, verify that your '\$whmcs_code_folder' and '\$whmcs_upload_folder' are set to correct loctions in configuration file."
+echo Configuration file: $WHMCS/includes/hooks/inc/oms_config.php
+
