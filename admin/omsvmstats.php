@@ -4,8 +4,8 @@ define("ADMINAREA", true);
 
 
 
-require ("init.php");
-include_once ('includes/hooks/inc/oms_utils.php');
+require ("../init.php");
+include_once ('../includes/hooks/inc/oms_utils.php');
 
 $ca = new WHMCS_ClientArea();
 $ca -> setPageTitle("VM statistics");
