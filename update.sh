@@ -25,8 +25,11 @@ rsync -av lang $WHMCS/
 rsync -av smarty $WHMCS/includes/
 # update templates
 rsync -av templates $WHMCS/
-# update admin scripts
-rsync -av admin $WHMCS/admin
+# update report scripts
+echo "Making sure that report folder ($WHMCS/reports) is present"
+mkdir -p $WHMCS/reports
+chown apache:apache $WHMCS/reports # if server is running as a different name
+rsync -av reports $WHMCS/reports
 # update logo
 # replace logo with a correct one
 #rsync -av logos/levira.png $WHMCS/templates/default/img/whmcslogo.png
