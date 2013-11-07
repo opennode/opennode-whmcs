@@ -29,7 +29,7 @@ rsync -av templates $WHMCS/
 echo "Making sure that report folder ($WHMCS/reports) is present"
 mkdir -p $WHMCS/reports
 chown apache:apache $WHMCS/reports # if server is running as a different name
-rsync -av reports $WHMCS/reports
+rsync -av reports $WHMCS
 # update logo
 # replace logo with a correct one
 #rsync -av logos/levira.png $WHMCS/templates/default/img/whmcslogo.png
