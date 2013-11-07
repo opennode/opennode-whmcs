@@ -24,12 +24,12 @@ parser.add_argument("dump_filename")
 args = parser.parse_args()
 
 # MODIFY TO MATCH YOUR INSTALLATION
-OMS_URL=args.oms_url
-COMPUTES_INFO="/computes/?depth=1&attrs=hostname,license_activated,owner,memory,num_cores,diskspace,state,ipv4_address"
-OMS_USERNAME=args.oms_username
-OMS_PASSWORD=args.oms_password
-FILENAME=args.dump_filename
-DEBUG=False
+OMS_URL = args.oms_url
+COMPUTES_INFO = "/computes/?depth=1&attrs=hostname,license_activated,owner,memory,num_cores,diskspace,state,ipv4_address"
+OMS_USERNAME = args.oms_username
+OMS_PASSWORD = args.oms_password
+FILENAME = args.dump_filename
+DEBUG = False
 
 # requests debug
 if DEBUG:
@@ -42,14 +42,16 @@ def get_client_info(name):
     r = requests.get(OMS_URL + '/home/%s?depth=1&attrs=uid,name' % name, auth=(OMS_USERNAME, OMS_PASSWORD), verify=False)
     return json.loads(r.text)
 
+
 # get all the known VMs
-#print "About to connect to %s to get the information. If the response takes longer, please check the set credentials" % OMS_URL
+# print "About to connect to %s to get the information. If the response takes longer, please check the set credentials" % OMS_URL
 r = requests.get(OMS_URL + COMPUTES_INFO, auth=(OMS_USERNAME, OMS_PASSWORD), verify=False)
 if r.status_code == 200:
     vms = json.loads(r.text)
 else:
     print "Failed to get a reasonable response from OMS. Switch on DEBUG to get more info"
     sys.exit(2)
+
 
 # write down statistics into a csv file and output as a csv into stdout
 with open(FILENAME, 'wb') as csvfile:
