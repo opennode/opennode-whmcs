@@ -18,7 +18,7 @@ rsync -av Classes $WHMCS/
 # update support scripts
 rsync -av *.php $WHMCS/
 # update support scripts
-rsync -av *.py $WHMCS/
+rsync -av scripts/*.py $WHMCS/
 # update language
 rsync -av lang $WHMCS/
 # update smarty functions

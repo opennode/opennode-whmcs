@@ -20,15 +20,16 @@ parser = argparse.ArgumentParser(description='Collect VM stats')
 parser.add_argument("oms_url")
 parser.add_argument("oms_username")
 parser.add_argument("oms_password")
-args = parser.parse_args() 
+parser.add_argument("dump_filename")
+args = parser.parse_args()
 
 # MODIFY TO MATCH YOUR INSTALLATION
-OMS_URL=args.oms_url
-COMPUTES_INFO="/computes/?depth=1&attrs=hostname,license_activated,owner,memory,num_cores,diskspace,state,ipv4_address"
-OMS_USERNAME=args.oms_username
-OMS_PASSWORD=args.oms_password
-FILENAME="vm-summary.csv"
-DEBUG=False
+OMS_URL = args.oms_url
+COMPUTES_INFO = "/computes/?depth=1&attrs=hostname,license_activated,owner,memory,num_cores,diskspace,state,ipv4_address"
+OMS_USERNAME = args.oms_username
+OMS_PASSWORD = args.oms_password
+FILENAME = args.dump_filename
+DEBUG = False
 
 # requests debug
 if DEBUG:
@@ -38,21 +39,22 @@ if DEBUG:
 
 def get_client_info(name):
     """Retrieve client specific info as seen by OMS"""
-    r = requests.get(OMS_URL + '/home/%s?depth=1&attrs=uid,name' % name, auth=(OMS_USERNAME, OMS_PASSWORD))
+    r = requests.get(OMS_URL + '/home/%s?depth=1&attrs=uid,name' % name, auth=(OMS_USERNAME, OMS_PASSWORD), verify=False)
     return json.loads(r.text)
 
+
 # get all the known VMs
-print "About to connect to %s to get the information. If the response takes longer, please check the set credentials" % OMS_URL
-r = requests.get(OMS_URL + COMPUTES_INFO, auth=(OMS_USERNAME, OMS_PASSWORD))
+# print "About to connect to %s to get the information. If the response takes longer, please check the set credentials" % OMS_URL
+r = requests.get(OMS_URL + COMPUTES_INFO, auth=(OMS_USERNAME, OMS_PASSWORD), verify=False)
 if r.status_code == 200:
     vms = json.loads(r.text)
 else:
     print "Failed to get a reasonable response from OMS. Switch on DEBUG to get more info"
     sys.exit(2)
 
-# write down statistics into a csv file
+
+# write down statistics into a csv file and output as a csv into stdout
 with open(FILENAME, 'wb') as csvfile:
-    print "Dumping statistics to %s" % FILENAME
     csvwriter = csv.writer(csvfile, delimiter=';',
                                     quotechar='"', quoting=csv.QUOTE_MINIMAL)
     csvwriter.writerow(['Hostname', 'Owner name', 'Owner id', 'Memory', 'Disk', 'Cores', 'IP'])
@@ -63,12 +65,13 @@ with open(FILENAME, 'wb') as csvfile:
         owner = v['owner']
         oinfo = {}
         if owner != None:
-             oinfo = get_client_info(owner)
+            oinfo = get_client_info(owner)
+        root_disk = v['diskspace']['total'] if v['diskspace'].get('total') is not None else v['diskspace']['root']
         vmdata = [v['hostname'], v['owner'],
                   oinfo.get('uid'),
-                  v['memory'], v['diskspace']['total'],
+                  v['memory'] / 1024.0, root_disk / 1024.0,
                   v['num_cores'],
                   v['ipv4_address']]
         csvwriter.writerow(vmdata)
-        print vmdata
-
+        items = map(lambda x: str(x), vmdata)
+        print ';'.join(items)
