@@ -30,7 +30,6 @@ if ($start_date && $end_date && $isAdmin > 0) {
 	$query = mysql_query($sql);
 	$clients = Array();
 	while ($client = mysql_fetch_array($query)) {
-		$client["username"] = get_username($client['clientid']);
 		$clients[] = $client;
 	}
 	$ca -> assign('clients', $clients);

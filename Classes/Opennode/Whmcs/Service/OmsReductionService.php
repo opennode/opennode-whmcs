@@ -13,7 +13,8 @@ class OmsReductionService {
     private $whmcsExternalService;
     private $whmcsDbService;
 
-    public function __construct($product_core_name, $product_disk_name, $product_memory_name, $oms_usage_db, $whmcsExternalService, $whmcsDbService) {
+    public function __construct($product_core_name, $product_disk_name, $product_memory_name,
+                                $oms_usage_db, $whmcsExternalService, $whmcsDbService) {
         $this -> product_core_name = $product_core_name;
         $this -> product_disk_name = $product_disk_name;
         $this -> product_memory_name = $product_memory_name;
@@ -45,8 +46,8 @@ class OmsReductionService {
             return;
         } else {
 
-            $this -> whmcsExternalService -> logActivity("Product prices: Core (1 core)= " . $p_core . 
-            	", disk (1GB) = " . $p_disk . ", Memory (1GB) = " . $p_memory);
+            $this -> whmcsExternalService -> logActivity("Product prices: Core (1 core)= " . $p_core .
+                ", disk (1GB) = " . $p_disk . ", Memory (1GB) = " . $p_memory);
         }
 
         $usersAmountsToRemove = array();
@@ -73,7 +74,7 @@ class OmsReductionService {
                         $recordIdsToUpdate[] = $prevRecord['id'];
                         //$this -> whmcsExternalService -> logActivity("Adding " . $addAmountToUser . " EUR to user :" . $username . " for " . $hoursInBetween . " hours. Adding Id:" . $prevRecord['id'] . " in array recordIdsToUpdate. Amount for month is:" . $amount);
                     } else {
-                        $this -> whmcsExternalService -> logActivity("Switching users when parsing logs:" . $prevRecord['username'] 
+                        $this -> whmcsExternalService -> logActivity("Switching users when parsing logs:" . $prevRecord['username']
                         		. "->" . $currRecord['username']);
                     }
                 }
@@ -117,7 +118,7 @@ ORDER BY conf.username, conf.timestamp";
      */
     function findClientConfChanges($clientId, $startDate, $endDate) {
         $table = $this -> oms_usage_db . ".CONF_CHANGES";
-        $username = \Opennode\Whmcs\Service\OmsService::getOmsUsername($clientId);
+        $username = $clientId; // XXX a temporary solution to speed up removal of the username
         if ($username) {
             $sql = "SELECT  timestamp as begintimestamp, cores, disk, memory, number_of_vms FROM " . $table;
             $sql .= " WHERE ";
@@ -214,7 +215,8 @@ ORDER BY conf.username, conf.timestamp";
             $sql = "UPDATE " . $table . " SET processed=true WHERE id IN(" . implode(',', $recordIdsToUpdate) . ')';
             $result = mysql_query($sql);
             if ($result) {
-                $this -> whmcsExternalService -> logActivity("Successfully updated " . $table . ". Updated " . sizeof($recordIdsToUpdate) . " entries.");
+                $this -> whmcsExternalService -> logActivity("Successfully updated " . $table .
+                                                ". Updated " . sizeof($recordIdsToUpdate) . " entries.");
             } else {
                 $this -> whmcsExternalService -> logActivity("Error updating " . $table);
             }
@@ -223,17 +225,12 @@ ORDER BY conf.username, conf.timestamp";
 
     function applyCreditRemovingFromUsersAmounts($usersAmountsToRemove) {
         foreach ($usersAmountsToRemove as $username => $amountToRemove) {
-            $userid = $this -> whmcsDbService -> getUserid($username);
-            if ($userid) {
+            $userid = $username;  // XXX temporary solution as part of freeing up from the usernames in whmcs
                 $amountToRemoveTaxAware = self::applyTax($userid, $amountToRemove);
-                $this -> whmcsExternalService -> logActivity("Going to remove credit for username: " . $username . 
-                	". Amount: " . $amountToRemoveTaxAware . " EUR. With VAT: " . $amountToRemove);
+                $this -> whmcsExternalService -> logActivity("Going to remove credit for username: " . $username .
+                    ". Amount: " . $amountToRemoveTaxAware . " EUR. With VAT: " . $amountToRemove);
                 $this -> whmcsDbService -> removeCreditFromClient($userid, $username, -$amountToRemoveTaxAware,
-                		"OMS_USAGE:(" . date('H:i:s', time()) . ")[removed:" . round($amountToRemoveTaxAware, 5) . " EUR] ");
-            } else {
-                $this -> whmcsExternalService -> logActivity("Username " . $username .
-                	" is missing from WHMCS DB, yet present in the usage table. Consider a cleanup.");
-            }
+                        "OMS_USAGE:(" . date('H:i:s', time()) . ")[removed:" . round($amountToRemoveTaxAware, 5) . " EUR] ");
         }
     }
 
@@ -242,32 +239,32 @@ ORDER BY conf.username, conf.timestamp";
      */
     public static function applyTax($clientId, $amount) {
         $taxrate = \Opennode\Whmcs\Service\WhmcsDbService::getClientsTaxrate($clientId);
-		$vat = 20;
+        $vat = 20; // XXX a fixed TAX rate, should be moved to configuration file
         if ($taxrate < $vat) {
-        	$amountWithoutTax = $amount / (100 + $vat - $taxrate) * 100;
-        	return $amountWithoutTax;
-		} else {
-			return $amount;
-		}
+            $amountWithoutTax = $amount / (100 + $vat - $taxrate) * 100;
+            return $amountWithoutTax;
+        } else {
+            return $amount;
+        }
     }
 
     /*
      *
-     * @Depreached
+     * @Deprecated
      */
     function getUserCreditLastReductionRuntime($userId, $username) {
-
+        // XXX username reference should be cleaned up as it's not used any more
         $table = $this -> oms_usage_db . ".CREDIT_REDUCTION";
         $sql = "SELECT MAX(TIMESTAMP) as timestamp FROM " . $table . " WHERE userid=" . $userId;
         $query = mysql_query($sql);
         $result = mysql_fetch_array($query);
         if ($result['timestamp']) {
-            $this -> whmcsExternalService -> logActivity("== Last timestamp for " . $username . ": " . $result['timestamp']);
+            $this -> whmcsExternalService -> logActivity("== Last timestamp for " . $userId . ": " . $result['timestamp']);
             return $result['timestamp'];
         } else {
             // If script is run for first time for user, then timestamp must come from conf_changes table
             $table = $this -> oms_usage_db . ".CONF_CHANGES";
-            $sql = "SELECT MAX(TIMESTAMP) as timestamp FROM " . $table . " WHERE username='" . $username . "'";
+            $sql = "SELECT MAX(TIMESTAMP) as timestamp FROM " . $table . " WHERE username='" . $userId . "'";
             $query = mysql_query($sql);
             $result = mysql_fetch_array($query);
             if ($result) {
@@ -280,8 +277,7 @@ ORDER BY conf.username, conf.timestamp";
     }
 
     /*
-     *
-     * @Depreached
+     * @Deprecated
      */
     function updateUserCreditReductionRuntime($userId) {
         $table = $this -> oms_usage_db . ".CREDIT_REDUCTION";

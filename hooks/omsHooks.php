@@ -50,5 +50,4 @@ add_hook("ClientAdd", 2, "setPasswordCookieClientAdd");
 add_hook("ClientAreaPage", 1, "addOmsConfUsageClientAreaPage");
 add_hook("ClientAreaPage", 2, "addOmsUsageClientAreaPage");
 add_hook("ClientAreaPage", 3, "addOmsClientGroupAreaPage");
-
 ?>
