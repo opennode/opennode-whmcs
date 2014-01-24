@@ -124,29 +124,23 @@ ORDER BY conf.username, conf.timestamp";
             $sql .= " WHERE ";
             $sql .= " username='" . $username . "'";
             if ($startDate && $endDate)
+                // FIXME: use self::$DATE_FORMAT instead
                 $sql .= " AND timestamp BETWEEN '" . $startDate -> format(OmsReductionService::$DATETIME_FORMAT) . "' AND '" . $endDate -> format(OmsReductionService::$DATETIME_FORMAT) . "' ";
 
             $sql .= " ORDER BY timestamp ASC";
-            $result = mysql_query($sql);
-            $resultsAsArray = array();
+            $result = mysql_query($sql); // FIXME: don't use mysql_*, use mysqli_* instead
+            $changes = array();
             if ($result) {
                 $prevRecord = null;
-                $i = 0;
+                $prevPrevRecord = null;
+                $lastChange = null;
                 while ($curRecord = mysql_fetch_assoc($result)) {
-                    if ($i > 0) {
-                        if ($prevRecord['cores'] == $curRecord['cores'] && $prevRecord['disk'] == $curRecord['disk'] && $prevRecord['memory'] == $curRecord['memory'] && $prevRecord['number_of_vms'] == $curRecord['number_of_vms']) {
-                            //skipping row is same as prev
-                        } else {
-                            $resultsAsArray[] = $curRecord;
-                            //add item that is not same as previous
-                        }
-
-                    } else {
+                    if (!$lastChange || self::isConfigChange($curRecord, $prevRecord, $prevPrevRecord) && self::compareUsageRecords($curRecord, $lastChange) !== 0) {
                         $resultsAsArray[] = $curRecord;
-                        //add first item
+                        $lastChange = $curRecord;
                     }
+                    $prevPrevRecord = $prevRecord;
                     $prevRecord = $curRecord;
-                    $i++;
                 }
             }
             return $resultsAsArray;
@@ -289,5 +283,44 @@ ORDER BY conf.username, conf.timestamp";
         return $retval;
     }
 
+    private static function isConfigChange($rec, $prevRec, $prevPrevRec) {
+        if (!$prevRec || !$prevPrevRec) {
+            // No previous two records -- this record is not a change (just ignoring diff between first two records)
+            return false;
+        } elseif (self::compareUsageRecords($rec, $prevPrevRec) === 0) {
+            // N-2 record is the same as this one -- this record is not a change
+            // Even if N-1 is different, it is probably a short fluctuation; not reporting change
+            return false;
+        } elseif (self::compareUsageRecords($rec, $prevRec) === 0) {
+            // N-1 record is the same as this one -- stable state for at least two polling cycles
+            // N-2 is different (see above) -- reporting a change
+            return true;
+        }
+
+        // N-2, N-1 and N exist and are all different -- ignoring possible change
+        // Will wait for the same result on at least two polling cycles
+        return false;
+    }
+
+    /*
+     * Compares usage records by these field values: cores, disk, memory, number_of_vms.
+     * Returns
+     *  0 if all values are equal,
+     *  -1 if *any* of listed values of a is less than corresponding b value
+     *  1 otherwise (none of listed a values is less than corresponding b value)
+     */
+    private static function compareUsageRecords($a, $b) {
+        $result = 0;
+
+        foreach (array('cores', 'disk', 'memory', 'number_of_vms') as $key) {
+            if ($a[$key] < $b[$key]) {
+                return -1;
+            } elseif ($a[$key] > $b[$key]) {
+                $result = 1;
+            }
+        }
+
+        return $result;
+    }
 }
 ?>
