@@ -123,19 +123,20 @@ ORDER BY conf.username, conf.timestamp";
             $sql .= " WHERE ";
             $sql .= " username='" . $username . "'";
             if ($startDate && $endDate)
+                // FIXME: use self::$DATE_FORMAT instead
                 $sql .= " AND timestamp BETWEEN '" . $startDate -> format(OmsReductionService::$DATETIME_FORMAT) . "' AND '" . $endDate -> format(OmsReductionService::$DATETIME_FORMAT) . "' ";
 
             $sql .= " ORDER BY timestamp ASC";
             $result = mysql_query($sql); // FIXME: don't use mysql_*, use mysqli_* instead
-            $resultsAsArray = array();
+            $changes = array();
             if ($result) {
                 $prevRecord = null;
                 $prevPrevRecord = null;
+                $lastChange = null;
                 while ($curRecord = mysql_fetch_assoc($result)) {
-                    if (is_null($prevRecord)) {
-                        $resultsAsArray[] = $curRecord; // Add first item
-                    } elseif (self::isConfigChange($curRecord, $prevRecord, $prevPrevRecord)) {
-                        $resultsAsArray[] = $curRecord; // Add config change
+                    if (!$lastChange || self::isConfigChange($curRecord, $prevRecord, $prevPrevRecord) && self::compareUsageRecords($curRecord, $lastChange) !== 0) {
+                        $resultsAsArray[] = $curRecord;
+                        $lastChange = $curRecord;
                     }
                     $prevPrevRecord = $prevRecord;
                     $prevRecord = $curRecord;
@@ -287,19 +288,22 @@ ORDER BY conf.username, conf.timestamp";
     }
 
     private static function isConfigChange($rec, $prevRec, $prevPrevRec) {
-        if (is_null($prevRec) || is_null($prevPrevRec)) {
-            return false; // No previous two records found -- this record is not a change (just ignoring diff between first two records)
+        if (!$prevRec || !$prevPrevRec) {
+            // No previous two records -- this record is not a change (just ignoring diff between first two records)
+            return false;
+        } elseif (self::compareUsageRecords($rec, $prevPrevRec) === 0) {
+            // N-2 record is the same as this one -- this record is not a change
+            // Even if N-1 is different, it is probably a short fluctuation; not reporting change
+            return false;
+        } elseif (self::compareUsageRecords($rec, $prevRec) === 0) {
+            // N-1 record is the same as this one -- stable state for at least two polling cycles
+            // N-2 is different (see above) -- reporting a change
+            return true;
         }
 
-        if (self::compareUsageRecords($rec, $prevRec) === 0) {
-            return false; // N-1 record is the same as this one -- this record is not a change
-        }
-
-        if (self::compareUsageRecords($rec, $prevPrevRec) === 0 && self::compareUsageRecords($prevRec, $prevPrevRec) < 0) {
-            return false; // N-2 record is the same as this one, and N-1 record is less than N-2 record -- this record is not a change
-        }
-
-        return true;
+        // N-2, N-1 and N exist and are all different -- ignoring possible change
+        // Will wait for the same result on at least two polling cycles
+        return false;
     }
 
     /*
