@@ -122,7 +122,7 @@ ORDER BY conf.username, conf.timestamp";
         if ($username) {
             $sql = "SELECT  timestamp as begintimestamp, cores, disk, memory, number_of_vms FROM " . $table;
             $sql .= " WHERE ";
-            $sql .= " username='" . $username . "'";
+            $sql .= " username='" . mysql_real_escape_string($username) . "'";
             if ($startDate && $endDate)
                 // FIXME: use self::$DATE_FORMAT instead
                 $sql .= " AND timestamp BETWEEN '" . $startDate -> format(OmsReductionService::$DATETIME_FORMAT) . "' AND '" . $endDate -> format(OmsReductionService::$DATETIME_FORMAT) . "' ";
@@ -260,7 +260,7 @@ ORDER BY conf.username, conf.timestamp";
 
     function applyCreditRemovingFromUsersAmounts($usersAmountsToRemove) {
         foreach ($usersAmountsToRemove as $username => $amountToRemove) {
-            $userid = $username;  // XXX temporary solution as part of freeing up from the usernames in whmcs
+            $userid =  mysql_real_escape_string($username);  // XXX temporary solution as part of freeing up from the usernames in whmcs
             $amountToRemoveTaxAware = self::applyTax($userid, $amountToRemove);
             $this -> whmcsExternalService -> logActivity("Going to remove credit for username: " . $username .
                 ". Amount: " . $amountToRemoveTaxAware . " EUR. With VAT: " . $amountToRemove);
