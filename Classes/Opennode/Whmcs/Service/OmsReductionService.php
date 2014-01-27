@@ -35,7 +35,7 @@ class OmsReductionService {
     }
 
     public function parseLegacyArrayForData($result) {
-		$this -> whmcsExternalService -> logActivity("Starting configuration log parsing");
+        $this -> whmcsExternalService -> logActivity("Starting configuration log parsing");
         //Get products prices
         $p_core = $this -> whmcsDbService -> getProductPriceByName($this -> product_core_name);
         $p_disk = $this -> whmcsDbService -> getProductPriceByName($this -> product_disk_name);
@@ -112,13 +112,13 @@ ORDER BY conf.username, conf.timestamp";
         return $resultsAsArray;
     }
 
-    /**
+/**
      * Query for clients OMS conf changes between dates
      * Return array
      */
-    function findClientConfChanges($clientId, $startDate, $endDate) {
+    function findClientConfChanges($userId, $startDate, $endDate) {
         $table = $this -> oms_usage_db . ".CONF_CHANGES";
-        $username = $clientId; // XXX a temporary solution to speed up removal of the username
+        $username = $userId;
         if ($username) {
             $sql = "SELECT  timestamp as begintimestamp, cores, disk, memory, number_of_vms FROM " . $table;
             $sql .= " WHERE ";
@@ -147,11 +147,52 @@ ORDER BY conf.username, conf.timestamp";
         }
     }
 
-    /**
-     * Parse clients conf changes
-     * Confs begin and end date is added. And running cost.
+    private static function isConfigChange($rec, $prevRec, $prevPrevRec) {
+        if (!$prevRec || !$prevPrevRec) {
+            // No previous two records -- this record is not a change (just ignoring diff between first two records)
+            return false;
+        } elseif (self::compareUsageRecords($rec, $prevPrevRec) === 0) {
+            // N-2 record is the same as this one -- this record is not a change
+            // Even if N-1 is different, it is probably a short fluctuation; not reporting change
+            return false;
+        } elseif (self::compareUsageRecords($rec, $prevRec) === 0) {
+            // N-1 record is the same as this one -- stable state for at least two polling cycles
+            // N-2 is different (see above) -- reporting a change
+            return true;
+        }
+
+        // N-2, N-1 and N exist and are all different -- ignoring possible change
+        // Will wait for the same result on at least two polling cycles
+        return false;
+    }
+
+    /*
+     * Compares usage records by these field values: cores, disk, memory, number_of_vms.
+     * Returns
+     *  0 if all values are equal,
+     *  -1 if *any* of listed values of a is less than corresponding b value
+     *  1 otherwise (none of listed a values is less than corresponding b value)
      */
-    public function parseClientConfChanges($result, $clientId) {
+    private static function compareUsageRecords($a, $b) {
+        $result = 0;
+
+        foreach (array('cores', 'disk', 'memory', 'number_of_vms') as $key) {
+            if ($a[$key] < $b[$key]) {
+                return -1;
+            } elseif ($a[$key] > $b[$key]) {
+                $result = 1;
+            }
+        }
+
+        return $result;
+    }
+
+
+    /**
+     * Parses clients configuration changes.
+     * Start date, end date and running costs are calculated.
+     */
+    public function parseClientConfChanges($result, $userId) {
 
         //Get products prices
         $p_core = $this -> whmcsDbService -> getProductPriceByName($this -> product_core_name);
@@ -190,8 +231,8 @@ ORDER BY conf.username, conf.timestamp";
                     $prevRecord['hoursInBetween'] = $hoursInBetween;
                     $prevRecord['end'] = $currRecord['begintimestamp'];
                     $prevRecord['begin'] = $prevRecord['begintimestamp'];
-                    $prevRecord['cost'] = self::applyTax($clientId, $cost);
-                    $prevRecord['price'] = self::applyTax($clientId, $amount);
+                    $prevRecord['cost'] = self::applyTax($userId, $cost);
+                    $prevRecord['price'] = self::applyTax($userId, $amount);
 
                     $resultsAsArray[] = $prevRecord;
                 }
@@ -220,20 +261,20 @@ ORDER BY conf.username, conf.timestamp";
     function applyCreditRemovingFromUsersAmounts($usersAmountsToRemove) {
         foreach ($usersAmountsToRemove as $username => $amountToRemove) {
             $userid = $username;  // XXX temporary solution as part of freeing up from the usernames in whmcs
-                $amountToRemoveTaxAware = self::applyTax($userid, $amountToRemove);
-                $this -> whmcsExternalService -> logActivity("Going to remove credit for username: " . $username .
-                    ". Amount: " . $amountToRemoveTaxAware . " EUR. With VAT: " . $amountToRemove);
-                $this -> whmcsDbService -> removeCreditFromClient($userid, $username, -$amountToRemoveTaxAware,
-                        "OMS_USAGE:(" . date('H:i:s', time()) . ")[removed:" . round($amountToRemoveTaxAware, 5) . " EUR] ");
+            $amountToRemoveTaxAware = self::applyTax($userid, $amountToRemove);
+            $this -> whmcsExternalService -> logActivity("Going to remove credit for username: " . $username .
+                ". Amount: " . $amountToRemoveTaxAware . " EUR. With VAT: " . $amountToRemove);
+            $this -> whmcsDbService -> removeCreditFromClient($userid, $username, -$amountToRemoveTaxAware,
+                "OMS_USAGE:(" . date('H:i:s', time()) . ")[removed:" . round($amountToRemoveTaxAware, 5) . " EUR] ");
         }
     }
 
     /**
-     * Applies tax, if any, to given user.
+     * Applies tax level to a given user.
      */
-    public static function applyTax($clientId, $amount) {
-        $taxrate = \Opennode\Whmcs\Service\WhmcsDbService::getClientsTaxrate($clientId);
-        $vat = 20; // XXX a fixed TAX rate, should be moved to configuration file
+    public static function applyTax($userId, $amount) {
+        $taxrate = \Opennode\Whmcs\Service\WhmcsDbService::getClientsTaxrate($userId);
+        $vat = 20;
         if ($taxrate < $vat) {
             $amountWithoutTax = $amount / (100 + $vat - $taxrate) * 100;
             return $amountWithoutTax;
@@ -241,7 +282,6 @@ ORDER BY conf.username, conf.timestamp";
             return $amount;
         }
     }
-
     /*
      *
      * @Deprecated
