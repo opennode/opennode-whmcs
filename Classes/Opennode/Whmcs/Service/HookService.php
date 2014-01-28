@@ -26,18 +26,12 @@ class HookService {
         global $oms_hostname, $oms_user, $oms_password;
         $userid = $vars['userid'];
         $password = $vars['password'];
-        $username = get_username($userid);
-        if ($username) {
-            $omsHelper = new \Opennode\Whmcs\Service\OmsService($oms_hostname, $oms_user, $oms_password);
-
-            $isSuccess = $omsHelper -> createOmsAccount($username, $password, $userid);
-            if ($isSuccess) {
-                error_log("Created OMS user: " . $username);
-            } else {
-                error_log("omsClientAdd: Error when creating OMS user: " . $username);
-            }
+        $omsHelper = new \Opennode\Whmcs\Service\OmsService($oms_hostname, $oms_user, $oms_password);
+        $isSuccess = $omsHelper -> createOmsAccount($userid, $password, $userid);
+        if ($isSuccess) {
+            error_log("Created OMS user: " . $userid);
         } else {
-            error_log("omsClientAdd: No username fount with id:" . $userid);
+            error_log("omsClientAdd: Error when creating OMS user: " . $userid);
         }
     }
 
@@ -54,13 +48,23 @@ class HookService {
      * Add clients OMS conf usage to display in clienthome.tpl
      */
     public static function addOmsConfUsageClientAreaPage($vars) {
-        global $product_core_name, $product_disk_name, $product_memory_name, $oms_usage_db, $whmcs_admin_user, $whmcs_admin_password, $whmcs_api_url, $oms_usage_db;
+        global $product_core_name, $product_disk_name, $product_memory_name,
+                $oms_usage_db,
+                $whmcs_admin_user, $whmcs_admin_password, $whmcs_api_url;
 
         $clientId = $_SESSION['uid'];
         if (is_numeric($clientId)) {
             $whmcsDbService = new \Opennode\Whmcs\Service\WhmcsDbService();
-            $whmcsExternalService = new \Opennode\Whmcs\Service\WhmcsExternalService($whmcs_admin_user, $whmcs_admin_password, $whmcs_api_url, $oms_usage_db);
-            $omsReduction = new \Opennode\Whmcs\Service\OmsReductionService($product_core_name, $product_disk_name, $product_memory_name, $oms_usage_db, $whmcsExternalService, $whmcsDbService);
+            $whmcsExternalService = new \Opennode\Whmcs\Service\WhmcsExternalService($whmcs_admin_user,
+                                                            $whmcs_admin_password,
+                                                            $whmcs_api_url,
+                                                            $oms_usage_db);
+            $omsReduction = new \Opennode\Whmcs\Service\OmsReductionService($product_core_name,
+                                                            $product_disk_name,
+                                                            $product_memory_name,
+                                                            $oms_usage_db,
+                                                            $whmcsExternalService,
+                                                            $whmcsDbService);
 
             $startDate = date_sub(date_create(), date_interval_create_from_date_string("1 months"));
             $endDate = date_create();
@@ -90,8 +94,8 @@ class HookService {
             return;
         }
 
-        $username = get_username($userId);
-		$balance_limit = get_balance_limit($userId);
+        $username = $userId; // XXX a temporary solution due to the removal of usernames
+        $balance_limit = get_balance_limit($userId);
 
         $table = $oms_usage_db . ".CONF_CHANGES";
 

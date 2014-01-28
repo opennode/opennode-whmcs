@@ -103,7 +103,7 @@ class WhmcsExternalService implements WhmcsExternalServiceInterface {
     /**
      * Function to remove credit from user
      */
-    function removeCreditForUserId($userId, $username, $amount, $desc) {
+    function removeCreditForUserId($userId, $amount, $desc) {
         error_log("Depreached: WHMCS rounds users credit.");
         if ($amount > 0) {
             $this -> logActivity("Error. Tried to ADD credit to userId:" . $userId);
@@ -118,7 +118,7 @@ class WhmcsExternalService implements WhmcsExternalServiceInterface {
         $clientData = $this -> callAPI($postfields);
 
         if ($clientData['result'] == "success") {
-            $this -> logActivity("Successfully removed amount of " . $amount . " credit from userId:" . $userId . "(" . $username . ")");
+            $this -> logActivity("Successfully removed amount of " . $amount . " credit from userId:" . $userId);
             return true;
         } else if ($clientData['result'] == "error") {
             $this -> logActivity("Error removing credit from userId:" . $userId . ". Error:" . $clientData['message']);

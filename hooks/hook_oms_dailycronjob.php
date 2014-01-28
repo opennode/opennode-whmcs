@@ -1,63 +1,60 @@
 <?php
 
 if (!defined("WHMCS"))
-	die("This file cannot be accessed directly");
+    die("This file cannot be accessed directly");
 
 include_once (dirname(__FILE__) . '/inc/oms_utils.php');
 
 function stop_users_vms() {
-	logActivity("Starting to stop vms for users.");
-	//Find all users whos credit is low
-	$table = "tblclients";
-	$fields = "*";
-	$result = select_query($table, $fields);
+    logActivity("Starting to stop vms for users.");
+    //Find all users whos credit is low
+    $table = "tblclients";
+    $fields = "*";
+    $result = select_query($table, $fields);
 
-	if ($result) {
-		while ($data = mysql_fetch_array($result)) {
-			$userid = $data['id'];
-			$username = get_username($userid);
-			if ($username) {
-				$balanceLimit = get_balance_limit($userid);
-				if (!$balanceLimit || !is_numeric($balanceLimit))
-					$balanceLimit = 0;
+    if ($result) {
+        while ($data = mysql_fetch_array($result)) {
+            $userid = $data['id'];
+            $balanceLimit = get_balance_limit($userid);
+            if (!$balanceLimit || !is_numeric($balanceLimit))
+                $balanceLimit = 0;
 
-				logActivity("Setting balance limit for user: " . $username . ". balanceLimit:" . $balanceLimit);
+            logActivity("Balance limit for user " . $userid . ": " . $balanceLimit);
 
-				if (getCreditForUserId($userid) + $balanceLimit < 0) {
-					logActivity("Stopping vms for user: " . $username);
+            if (getCreditForUserId($userid) + $balanceLimit < 0) {
+                logActivity("Stopping vms for user: " . $userid);
 
-					$command = '/bin/stopvms?arg=-u&arg=' . $username . '&asynchronous';
-					$res = oms_command($command);
+                $command = '/bin/stopvms?arg=-u&arg=' . $userid . '&asynchronous';
+                $res = oms_command($command);
 
-					if ($res != -1)
-						logActivity("Stopped vms for user: " . $username . ". Result:" . $res);
-					else
-						logActivity("Stoping vms Failed for user: " . $username);
-				}
-			}
-		}
-	}
-	logActivity("Stopping vms for users ended.");
+                if ($res != -1)
+                    logActivity("Stopped vms for user: " . $userid . ". Result:" . $res);
+                else
+                    logActivity("Stoping vms failed for user: " . $userid);
+            }
+        }
+    }
+    logActivity("Stopping vms for users ended.");
 }
 
 function getCreditForUserId($userId) {
-	$clientCredit = 0;
+    $clientCredit = 0;
 
-	$command = "getcredits";
-	$adminuser = "admin";
-	$values["clientid"] = $userId;
+    $command = "getcredits";
+    $adminuser = "admin";
+    $values["clientid"] = $userId;
 
-	$clientData = localAPI($command, $values, $adminuser);
+    $clientData = localAPI($command, $values, $adminuser);
 
-	if ($clientData['result'] == "success") {
-		foreach ($clientData['credits'] as $creditArr) {
-			foreach ($creditArr as $credit) {
-				$clientCredit += $credit['amount'];
-			}
-		}
-	}
+    if ($clientData['result'] == "success") {
+        foreach ($clientData['credits'] as $creditArr) {
+            foreach ($creditArr as $credit) {
+                $clientCredit += $credit['amount'];
+            }
+        }
+    }
 
-	return $clientCredit;
+    return $clientCredit;
 }
 
 add_hook("DailyCronJob", 1, "stop_users_vms");

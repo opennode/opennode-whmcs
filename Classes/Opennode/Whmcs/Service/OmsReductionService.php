@@ -13,7 +13,8 @@ class OmsReductionService {
     private $whmcsExternalService;
     private $whmcsDbService;
 
-    public function __construct($product_core_name, $product_disk_name, $product_memory_name, $oms_usage_db, $whmcsExternalService, $whmcsDbService) {
+    public function __construct($product_core_name, $product_disk_name, $product_memory_name,
+                                $oms_usage_db, $whmcsExternalService, $whmcsDbService) {
         $this -> product_core_name = $product_core_name;
         $this -> product_disk_name = $product_disk_name;
         $this -> product_memory_name = $product_memory_name;
@@ -34,7 +35,7 @@ class OmsReductionService {
     }
 
     public function parseLegacyArrayForData($result) {
-		$this -> whmcsExternalService -> logActivity("Starting configuration log parsing");
+        $this -> whmcsExternalService -> logActivity("Starting configuration log parsing");
         //Get products prices
         $p_core = $this -> whmcsDbService -> getProductPriceByName($this -> product_core_name);
         $p_disk = $this -> whmcsDbService -> getProductPriceByName($this -> product_disk_name);
@@ -45,8 +46,8 @@ class OmsReductionService {
             return;
         } else {
 
-            $this -> whmcsExternalService -> logActivity("Product prices: Core (1 core)= " . $p_core . 
-            	", disk (1GB) = " . $p_disk . ", Memory (1GB) = " . $p_memory);
+            $this -> whmcsExternalService -> logActivity("Product prices: Core (1 core)= " . $p_core .
+                ", disk (1GB) = " . $p_disk . ", Memory (1GB) = " . $p_memory);
         }
 
         $usersAmountsToRemove = array();
@@ -73,7 +74,7 @@ class OmsReductionService {
                         $recordIdsToUpdate[] = $prevRecord['id'];
                         //$this -> whmcsExternalService -> logActivity("Adding " . $addAmountToUser . " EUR to user :" . $username . " for " . $hoursInBetween . " hours. Adding Id:" . $prevRecord['id'] . " in array recordIdsToUpdate. Amount for month is:" . $amount);
                     } else {
-                        $this -> whmcsExternalService -> logActivity("Switching users when parsing logs:" . $prevRecord['username'] 
+                        $this -> whmcsExternalService -> logActivity("Switching users when parsing logs:" . $prevRecord['username']
                         		. "->" . $currRecord['username']);
                     }
                 }
@@ -111,52 +112,87 @@ ORDER BY conf.username, conf.timestamp";
         return $resultsAsArray;
     }
 
-    /**
+/**
      * Query for clients OMS conf changes between dates
      * Return array
      */
-    function findClientConfChanges($clientId, $startDate, $endDate) {
+    function findClientConfChanges($userId, $startDate, $endDate) {
         $table = $this -> oms_usage_db . ".CONF_CHANGES";
-        $username = \Opennode\Whmcs\Service\OmsService::getOmsUsername($clientId);
+        $username = $userId;
         if ($username) {
             $sql = "SELECT  timestamp as begintimestamp, cores, disk, memory, number_of_vms FROM " . $table;
             $sql .= " WHERE ";
-            $sql .= " username='" . $username . "'";
+            $sql .= " username='" . mysql_real_escape_string($username) . "'";
             if ($startDate && $endDate)
+                // FIXME: use self::$DATE_FORMAT instead
                 $sql .= " AND timestamp BETWEEN '" . $startDate -> format(OmsReductionService::$DATETIME_FORMAT) . "' AND '" . $endDate -> format(OmsReductionService::$DATETIME_FORMAT) . "' ";
 
             $sql .= " ORDER BY timestamp ASC";
-            $result = mysql_query($sql);
-            $resultsAsArray = array();
+            $result = mysql_query($sql); // FIXME: don't use mysql_*, use mysqli_* instead
+            $changes = array();
             if ($result) {
                 $prevRecord = null;
-                $i = 0;
+                $prevPrevRecord = null;
+                $lastChange = null;
                 while ($curRecord = mysql_fetch_assoc($result)) {
-                    if ($i > 0) {
-                        if ($prevRecord['cores'] == $curRecord['cores'] && $prevRecord['disk'] == $curRecord['disk'] && $prevRecord['memory'] == $curRecord['memory'] && $prevRecord['number_of_vms'] == $curRecord['number_of_vms']) {
-                            //skipping row is same as prev
-                        } else {
-                            $resultsAsArray[] = $curRecord;
-                            //add item that is not same as previous
-                        }
-
-                    } else {
+                    if (!$lastChange || self::isConfigChange($curRecord, $prevRecord, $prevPrevRecord) && self::compareUsageRecords($curRecord, $lastChange) !== 0) {
                         $resultsAsArray[] = $curRecord;
-                        //add first item
+                        $lastChange = $curRecord;
                     }
+                    $prevPrevRecord = $prevRecord;
                     $prevRecord = $curRecord;
-                    $i++;
                 }
             }
             return $resultsAsArray;
         }
     }
 
-    /**
-     * Parse clients conf changes
-     * Confs begin and end date is added. And running cost.
+    private static function isConfigChange($rec, $prevRec, $prevPrevRec) {
+        if (!$prevRec || !$prevPrevRec) {
+            // No previous two records -- this record is not a change (just ignoring diff between first two records)
+            return false;
+        } elseif (self::compareUsageRecords($rec, $prevPrevRec) === 0) {
+            // N-2 record is the same as this one -- this record is not a change
+            // Even if N-1 is different, it is probably a short fluctuation; not reporting change
+            return false;
+        } elseif (self::compareUsageRecords($rec, $prevRec) === 0) {
+            // N-1 record is the same as this one -- stable state for at least two polling cycles
+            // N-2 is different (see above) -- reporting a change
+            return true;
+        }
+
+        // N-2, N-1 and N exist and are all different -- ignoring possible change
+        // Will wait for the same result on at least two polling cycles
+        return false;
+    }
+
+    /*
+     * Compares usage records by these field values: cores, disk, memory, number_of_vms.
+     * Returns
+     *  0 if all values are equal,
+     *  -1 if *any* of listed values of a is less than corresponding b value
+     *  1 otherwise (none of listed a values is less than corresponding b value)
      */
-    public function parseClientConfChanges($result, $clientId) {
+    private static function compareUsageRecords($a, $b) {
+        $result = 0;
+
+        foreach (array('cores', 'disk', 'memory', 'number_of_vms') as $key) {
+            if ($a[$key] < $b[$key]) {
+                return -1;
+            } elseif ($a[$key] > $b[$key]) {
+                $result = 1;
+            }
+        }
+
+        return $result;
+    }
+
+
+    /**
+     * Parses clients configuration changes.
+     * Start date, end date and running costs are calculated.
+     */
+    public function parseClientConfChanges($result, $userId) {
 
         //Get products prices
         $p_core = $this -> whmcsDbService -> getProductPriceByName($this -> product_core_name);
@@ -195,8 +231,8 @@ ORDER BY conf.username, conf.timestamp";
                     $prevRecord['hoursInBetween'] = $hoursInBetween;
                     $prevRecord['end'] = $currRecord['begintimestamp'];
                     $prevRecord['begin'] = $prevRecord['begintimestamp'];
-                    $prevRecord['cost'] = self::applyTax($clientId, $cost);
-                    $prevRecord['price'] = self::applyTax($clientId, $amount);
+                    $prevRecord['cost'] = self::applyTax($userId, $cost);
+                    $prevRecord['price'] = self::applyTax($userId, $amount);
 
                     $resultsAsArray[] = $prevRecord;
                 }
@@ -214,7 +250,8 @@ ORDER BY conf.username, conf.timestamp";
             $sql = "UPDATE " . $table . " SET processed=true WHERE id IN(" . implode(',', $recordIdsToUpdate) . ')';
             $result = mysql_query($sql);
             if ($result) {
-                $this -> whmcsExternalService -> logActivity("Successfully updated " . $table . ". Updated " . sizeof($recordIdsToUpdate) . " entries.");
+                $this -> whmcsExternalService -> logActivity("Successfully updated " . $table .
+                                                ". Updated " . sizeof($recordIdsToUpdate) . " entries.");
             } else {
                 $this -> whmcsExternalService -> logActivity("Error updating " . $table);
             }
@@ -223,51 +260,45 @@ ORDER BY conf.username, conf.timestamp";
 
     function applyCreditRemovingFromUsersAmounts($usersAmountsToRemove) {
         foreach ($usersAmountsToRemove as $username => $amountToRemove) {
-            $userid = $this -> whmcsDbService -> getUserid($username);
-            if ($userid) {
-                $amountToRemoveTaxAware = self::applyTax($userid, $amountToRemove);
-                $this -> whmcsExternalService -> logActivity("Going to remove credit for username: " . $username . 
-                	". Amount: " . $amountToRemoveTaxAware . " EUR. With VAT: " . $amountToRemove);
-                $this -> whmcsDbService -> removeCreditFromClient($userid, $username, -$amountToRemoveTaxAware,
-                		"OMS_USAGE:(" . date('H:i:s', time()) . ")[removed:" . round($amountToRemoveTaxAware, 5) . " EUR] ");
-            } else {
-                $this -> whmcsExternalService -> logActivity("Username " . $username .
-                	" is missing from WHMCS DB, yet present in the usage table. Consider a cleanup.");
-            }
+            $userid =  mysql_real_escape_string($username);  // XXX temporary solution as part of freeing up from the usernames in whmcs
+            $amountToRemoveTaxAware = self::applyTax($userid, $amountToRemove);
+            $this -> whmcsExternalService -> logActivity("Going to remove credit for username: " . $username .
+                ". Amount: " . $amountToRemoveTaxAware . " EUR. With VAT: " . $amountToRemove);
+            $this -> whmcsDbService -> removeCreditFromClient($userid, $username, -$amountToRemoveTaxAware,
+                "OMS_USAGE:(" . date('H:i:s', time()) . ")[removed:" . round($amountToRemoveTaxAware, 5) . " EUR] ");
         }
     }
 
     /**
-     * Applies tax, if any, to given user.
+     * Applies tax level to a given user.
      */
-    public static function applyTax($clientId, $amount) {
-        $taxrate = \Opennode\Whmcs\Service\WhmcsDbService::getClientsTaxrate($clientId);
-		$vat = 20;
+    public static function applyTax($userId, $amount) {
+        $taxrate = \Opennode\Whmcs\Service\WhmcsDbService::getClientsTaxrate($userId);
+        $vat = 20;
         if ($taxrate < $vat) {
-        	$amountWithoutTax = $amount / (100 + $vat - $taxrate) * 100;
-        	return $amountWithoutTax;
-		} else {
-			return $amount;
-		}
+            $amountWithoutTax = $amount / (100 + $vat - $taxrate) * 100;
+            return $amountWithoutTax;
+        } else {
+            return $amount;
+        }
     }
-
     /*
      *
-     * @Depreached
+     * @Deprecated
      */
     function getUserCreditLastReductionRuntime($userId, $username) {
-
+        // XXX username reference should be cleaned up as it's not used any more
         $table = $this -> oms_usage_db . ".CREDIT_REDUCTION";
         $sql = "SELECT MAX(TIMESTAMP) as timestamp FROM " . $table . " WHERE userid=" . $userId;
         $query = mysql_query($sql);
         $result = mysql_fetch_array($query);
         if ($result['timestamp']) {
-            $this -> whmcsExternalService -> logActivity("== Last timestamp for " . $username . ": " . $result['timestamp']);
+            $this -> whmcsExternalService -> logActivity("== Last timestamp for " . $userId . ": " . $result['timestamp']);
             return $result['timestamp'];
         } else {
             // If script is run for first time for user, then timestamp must come from conf_changes table
             $table = $this -> oms_usage_db . ".CONF_CHANGES";
-            $sql = "SELECT MAX(TIMESTAMP) as timestamp FROM " . $table . " WHERE username='" . $username . "'";
+            $sql = "SELECT MAX(TIMESTAMP) as timestamp FROM " . $table . " WHERE username='" . $userId . "'";
             $query = mysql_query($sql);
             $result = mysql_fetch_array($query);
             if ($result) {
@@ -280,8 +311,7 @@ ORDER BY conf.username, conf.timestamp";
     }
 
     /*
-     *
-     * @Depreached
+     * @Deprecated
      */
     function updateUserCreditReductionRuntime($userId) {
         $table = $this -> oms_usage_db . ".CREDIT_REDUCTION";
@@ -293,5 +323,44 @@ ORDER BY conf.username, conf.timestamp";
         return $retval;
     }
 
+    private static function isConfigChange($rec, $prevRec, $prevPrevRec) {
+        if (!$prevRec || !$prevPrevRec) {
+            // No previous two records -- this record is not a change (just ignoring diff between first two records)
+            return false;
+        } elseif (self::compareUsageRecords($rec, $prevPrevRec) === 0) {
+            // N-2 record is the same as this one -- this record is not a change
+            // Even if N-1 is different, it is probably a short fluctuation; not reporting change
+            return false;
+        } elseif (self::compareUsageRecords($rec, $prevRec) === 0) {
+            // N-1 record is the same as this one -- stable state for at least two polling cycles
+            // N-2 is different (see above) -- reporting a change
+            return true;
+        }
+
+        // N-2, N-1 and N exist and are all different -- ignoring possible change
+        // Will wait for the same result on at least two polling cycles
+        return false;
+    }
+
+    /*
+     * Compares usage records by these field values: cores, disk, memory, number_of_vms.
+     * Returns
+     *  0 if all values are equal,
+     *  -1 if *any* of listed values of a is less than corresponding b value
+     *  1 otherwise (none of listed a values is less than corresponding b value)
+     */
+    private static function compareUsageRecords($a, $b) {
+        $result = 0;
+
+        foreach (array('cores', 'disk', 'memory', 'number_of_vms') as $key) {
+            if ($a[$key] < $b[$key]) {
+                return -1;
+            } elseif ($a[$key] > $b[$key]) {
+                $result = 1;
+            }
+        }
+
+        return $result;
+    }
 }
 ?>

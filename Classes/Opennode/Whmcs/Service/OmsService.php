@@ -20,7 +20,7 @@ class OmsService {
      * @return boolean if account creation was successful
      */
     function createOmsAccount($username, $password, $userid) {
-        $command = '/bin/adduser?arg=' . $username . '&arg=' . $password .
+        $command = '/bin/adduser?arg=' . $userid . '&arg=' . $password .
                         '&arg=-i&arg=' . $userid;
         $resp = $this -> omsCommand($command);
         if ($resp != -1) {
@@ -38,15 +38,8 @@ class OmsService {
      *Extract username from the custom field with a specified name ('Username').
      */
     public static function getOmsUsername($userid) {
-        $result = mysql_query("SELECT id FROM tblcustomfields WHERE fieldname='Username'");
-        $grab_customfieldid = mysql_fetch_row($result);
-        $username_customfieldid = $grab_customfieldid[0];
-
-        // get username value
-        $result = mysql_query("SELECT value FROM tblcustomfieldsvalues WHERE fieldid = " . $username_customfieldid . " and relid = " . $userid);
-        $usernamefield = mysql_fetch_row($result);
-        $username = $usernamefield[0];
-        return $username;
+        // XXX as part of the refactoring, username became obsolete. Leaving this function for robustness
+        return $userid;
     }
 
     /**

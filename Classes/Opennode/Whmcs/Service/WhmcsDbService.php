@@ -34,30 +34,19 @@ class WhmcsDbService {
      */
     public static function getClientsTaxrate($clientId) {
         if (is_numeric($clientId)) {
-			$te_sql = "select taxexempt from tblclients where id=" . $clientId;
-			$te_query = mysql_query($te_sql);
+            $te_sql = "select taxexempt from tblclients where id=" . $clientId;
+            $te_query = mysql_query($te_sql);
             if ($te_query) {
                 $row = mysql_fetch_row($te_query);
                 if ($row) {
-                	if ($row[0] == 'on') {
-                		return 0;
-                	} else 
-                		return 20;  // hardcoded VAT
-				}
-			}
+                    if ($row[0] == 'on') {
+                        return 0;
+                    } else
+                        return 20;
+                    // hardcoded VAT
+                }
+            }
         }
-    }
-
-    function getUserid($username) {
-        $result = mysql_query("SELECT id FROM tblcustomfields WHERE fieldname='Username'");
-        $grab_customfieldid = mysql_fetch_row($result);
-        $username_customfieldid = $grab_customfieldid[0];
-
-        // get username value
-        $result = mysql_query("SELECT relid FROM tblcustomfieldsvalues WHERE fieldid = " . $username_customfieldid . " and value = '" . $username . "'");
-        $useridfield = mysql_fetch_row($result);
-        $userid = $useridfield[0];
-        return $userid;
     }
 
     /**
@@ -69,7 +58,7 @@ class WhmcsDbService {
             return;
         }
         if (is_numeric($amount) && $amount < 0) {
-            $this -> addCredit($clientId, $username, $amount, $desc);
+            $this -> addCredit($clientId, $amount, $desc);
             $this -> updateCreditSum($clientId);
         }
     }
@@ -88,70 +77,71 @@ class WhmcsDbService {
     /**
      * Adds credit record directly to db.
      */
-    private function addCredit($clientId, $username, $amount, $desc) {
+    private function addCredit($clientId, $amount, $desc) {
 
         $this -> logActivity("Adding credit row for client: " . $clientId);
         $table = "tblcredit";
 
-        $sql = "INSERT INTO " . $table . " (clientid, date, amount, description) VALUES (" . $clientId . ", CURDATE() ,'" . $amount . "','" . $desc . "' )";
+        $sql = "INSERT INTO " . $table . " (clientid, date, amount, description) VALUES (" . $clientId .
+                                ", CURDATE() ,'" . $amount . "','" . $desc . "' )";
         $retval = mysql_query($sql);
         if (!$retval) {
             $this -> logActivity("addCredit error for userid: " . $clientId);
         }
         return $retval;
     }
-	
-	/**
-	 * Get id of the specified client group. 
-	 */
-	function getClientGroupId($client_group_name) {
-        $result = mysql_query("SELECT id FROM tblclientgroups WHERE groupname='". $client_group_name ."'");
+
+    /**
+     * Get id of the specified client group.
+     */
+    function getClientGroupId($client_group_name) {
+        $result = mysql_query("SELECT id FROM tblclientgroups WHERE groupname='" . $client_group_name . "'");
         $grab_customfieldid = mysql_fetch_row($result);
         return $grab_customfieldid[0];
     }
-	
-	/**
-	 * Return list of client id's belonging to a defined customer group.
-	 */
-	function getClientsByGroup($client_group_id) {
-		$result = mysql_query("SELECT id FROM tblclients WHERE groupid='". $client_group_id ."'");
-		$resultsAsArray = array();
+
+    /**
+     * Return list of client id's belonging to a defined customer group.
+     */
+    function getClientsByGroup($client_group_id) {
+        $result = mysql_query("SELECT id FROM tblclients WHERE groupid='" . $client_group_id . "'");
+        $resultsAsArray = array();
         if ($result) {
             while ($row = mysql_fetch_assoc($result)) {
                 $resultsAsArray[] = $row;
             }
         }
         return $resultsAsArray;
-	}
-	
-	/**
-	 * Return a list of all client usernames
-	 */
-	function getClientsUsernames() {
-		$result = mysql_query("SELECT id FROM tblclients");
-		$resultsAsArray = array();
+    }
+
+    /**
+     * Return a list of all client usernames
+     */
+    function getClientsUsernames() {
+        $result = mysql_query("SELECT id FROM tblclients");
+        $resultsAsArray = array();
         if ($result) {
             while ($row = mysql_fetch_assoc($result)) {
                 $resultsAsArray[] = $row;
             }
         }
         return $resultsAsArray;
-	}
-	
-	/*
-	 Extract users Balance limit from the custom field with a specified name ('Balance limit').
-	 */
-	function getBalanceLimit($userid) {
+    }
+
+    /*
+     Extract users Balance limit from the custom field with a specified name ('Balance limit').
+     */
+    function getBalanceLimit($userid) {
         $result = mysql_query("SELECT id FROM tblcustomfields WHERE fieldname='Balance limit'");
         $grab_customfieldid = mysql_fetch_row($result);
-        $username_customfieldid = $grab_customfieldid[0];
+        $balance_customfieldid = $grab_customfieldid[0];
 
-        // get Balance limit  value
-        $result = mysql_query("SELECT value FROM tblcustomfieldsvalues WHERE fieldid = " . $username_customfieldid . " and relid = " . $userid);
+        // get balance limit  value
+        $result = mysql_query("SELECT value FROM tblcustomfieldsvalues WHERE fieldid = " . $balance_customfieldid . " and relid = " . $userid);
         $bfield = mysql_fetch_row($result);
         $blimit = $bfield[0];
         return $blimit;
-	}
-	
+    }
+
 }
 ?>
