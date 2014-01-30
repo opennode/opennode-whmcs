@@ -31,7 +31,7 @@ $usernameField = mysql_fetch_assoc($result);
 $result = mysql_query("SELECT DISTINCT relid AS user_id, value AS username FROM tblcustomfieldsvalues WHERE fieldid = " . (int) $usernameField['id']);
 while ($user = mysql_fetch_assoc($result)) {
     error_log("User id={$user['user_id']} username={$user['username']}");
-    $sql = "UPDATE CONF_CHANGES SET username = '" . mysql_real_escape_string($user['user_id']) . "' WHERE username = '" . mysql_real_escape_string($user['username']) . "'";
+    $sql = "UPDATE " . $oms_usage_db . ".CONF_CHANGES SET username = '" . mysql_real_escape_string($user['user_id']) . "' WHERE username = '" . mysql_real_escape_string($user['username']) . "'";
     // No migration yet
     print $sql . "\n";
     mysql_query($sql) or die("MySQL error: " . mysql_error());

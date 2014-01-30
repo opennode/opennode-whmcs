@@ -29,6 +29,7 @@ function get_balance_limit($userid) {
        $bfield = mysql_fetch_row($result);
        $blimit = $bfield[0];
        return $blimit;
+}
 
 /*
  Execute command against OMS server.
