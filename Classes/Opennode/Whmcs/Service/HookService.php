@@ -82,6 +82,9 @@ class HookService {
         global $oms_usage_db, $product_core_name, $product_disk_name, $product_memory_name;
 
         $userId = $_SESSION['uid'];
+        if (!is_numeric($userId)) {
+            return array();
+        }
         //Get products prices
         $hours_per_month = 720;
         $p_core = getProductPriceByName($product_core_name) / $hours_per_month;
