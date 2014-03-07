@@ -4,8 +4,10 @@ if (!defined("WHMCS")) {
     die("This file cannot be accessed directly");
 }
 
+require_once (dirname(__FILE__) . '/inc/oms_config.php');
+
 function add_oms_user_promotion($vars) {
-    $localApiAdminUser = "admin";
+    global $whmcs_admin_user;
 
     // Achivement unlocked: ugly hack with ugliness over 9000
     // 'customfield' index must match field ordering in Setup > Custom Client Fields
@@ -19,7 +21,7 @@ function add_oms_user_promotion($vars) {
     $values = array(
         'code' => $promoCode,
     );
-    $result = localAPI("getpromotions", $values, $localApiAdminUser);
+    $result = localAPI("getpromotions", $values, $whmcs_admin_user);
     if ($result['result'] != "success") {
         logActivity("Failed to retrieve promotions (user ID: {$vars['userid']}), API call result: " . print_r($result, true));
         return;
@@ -44,7 +46,7 @@ function add_oms_user_promotion($vars) {
         'clientid' => $vars['userid'],
         'description' => "Promotion code: $promoCode",
     );
-    $result = localAPI("addcredit", $values, $localApiAdminUser);
+    $result = localAPI("addcredit", $values, $whmcs_admin_user);
     if ($result['result'] != "success") {
         logActivity("Failed to add credit from promotion (user ID: {$vars['userid']}, promo code: {$promoCode}), API call result: " . print_r($result, true));
         return;
