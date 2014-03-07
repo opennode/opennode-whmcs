@@ -9,15 +9,22 @@ require_once (dirname(__FILE__) . '/inc/oms_config.php');
 function add_oms_user_promotion($vars) {
     global $whmcs_admin_user;
 
-    // Achivement unlocked: ugly hack with ugliness over 9000
-    // 'customfield' index must match field ordering in Setup > Custom Client Fields
-    // TODO: better fix fix needed, for example: read all custom fields and find the one with name 'promotion'
-    $promoCode = $_POST['customfield'][1];
+    // Get promo code (this is just very wrong on all levels)
+    $sql = "SELECT id FROM tblcustomfields WHERE fieldname='promotion'";
+    $result = mysql_query($sql);
+    if (!$result) {
+        logActivity("Error: failed to retrieve promotion field index from database (user ID: {$vars['userid']}), MySQL error: " . mysql_error());
+        return;
+    }
+    $resultArr = mysql_fetch_assoc($result);
+    $promotionFieldIndex = (int) $resultArr['id'];
+    $promoCode = $_POST['customfield'][$promotionFieldIndex];
     if (!$promoCode) {
-        logActivity("No promo code provided (user ID: {$vars['userid']})...");
+        logActivity("No promo code provided (user ID: {$vars['userid']}, promotion field ID: {$promotionFieldIndex})...");
         return;
     }
 
+    // Get promotion
     $values = array(
         'code' => $promoCode,
     );
@@ -41,6 +48,7 @@ function add_oms_user_promotion($vars) {
     // TODO: check $promotion['uses'] < $promotion['maxuses']
     // TODO: check time() < strtotime($promotion['expirationdate'])
 
+    // Add credit to client
     $values = array(
         'amount' => $promotion['value'],
         'clientid' => $vars['userid'],
@@ -51,8 +59,6 @@ function add_oms_user_promotion($vars) {
         logActivity("Failed to add credit from promotion (user ID: {$vars['userid']}, promo code: {$promoCode}), API call result: " . print_r($result, true));
         return;
     }
-
-    logActivity("Credit added: {$promotion['value']} (user ID: {$vars['userid']}, promo code: {$promoCode})");
 }
 
 add_hook("ClientAdd", 1, "add_oms_user_promotion");
